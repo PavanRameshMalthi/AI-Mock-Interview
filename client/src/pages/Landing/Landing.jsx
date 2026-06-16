@@ -10,7 +10,9 @@ const Landing = () => {
     >
       <h1>AI Mock Interview Platform</h1>
 
-      <p>Practice interviews with AI and improve your skills.</p>
+      <p>
+        Practice interviews with AI and improve your skills.
+      </p>
 
       <div style={{ marginTop: "20px" }}>
         <Link to="/login">

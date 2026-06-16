@@ -22,15 +22,12 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/auth/register",
         formData
       );
 
       alert("Registration Successful!");
-
-      console.log(res.data);
-
       navigate("/login");
     } catch (error) {
       alert(
@@ -54,59 +51,47 @@ const Register = () => {
         <input
           type="text"
           name="name"
-          placeholder="Enter Name"
+          placeholder="Name"
           value={formData.name}
           onChange={handleChange}
           required
-          style={{
-            width: "100%",
-            padding: "10px",
-            margin: "10px 0",
-          }}
         />
+
+        <br />
+        <br />
 
         <input
           type="email"
           name="email"
-          placeholder="Enter Email"
+          placeholder="Email"
           value={formData.email}
           onChange={handleChange}
           required
-          style={{
-            width: "100%",
-            padding: "10px",
-            margin: "10px 0",
-          }}
         />
+
+        <br />
+        <br />
 
         <input
           type="password"
           name="password"
-          placeholder="Enter Password"
+          placeholder="Password"
           value={formData.password}
           onChange={handleChange}
           required
-          style={{
-            width: "100%",
-            padding: "10px",
-            margin: "10px 0",
-          }}
         />
 
-        <button
-          type="submit"
-          style={{
-            padding: "10px 20px",
-            marginTop: "10px",
-          }}
-        >
+        <br />
+        <br />
+
+        <button type="submit">
           Register
         </button>
       </form>
 
       <p>
-        Already have an account?{" "}
-        <Link to="/login">Login</Link>
+        Already have an account?
+        <Link to="/login"> Login</Link>
       </p>
     </div>
   );

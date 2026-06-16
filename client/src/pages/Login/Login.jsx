@@ -26,13 +26,17 @@ const Login = () => {
         formData
       );
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
+
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
       );
 
-      alert("Login Successful!");
+      alert("Login Successful");
 
       navigate("/dashboard");
     } catch (error) {
@@ -57,45 +61,35 @@ const Login = () => {
         <input
           type="email"
           name="email"
-          placeholder="Enter Email"
+          placeholder="Email"
           value={formData.email}
           onChange={handleChange}
           required
-          style={{
-            width: "100%",
-            padding: "10px",
-            margin: "10px 0",
-          }}
         />
+
+        <br />
+        <br />
 
         <input
           type="password"
           name="password"
-          placeholder="Enter Password"
+          placeholder="Password"
           value={formData.password}
           onChange={handleChange}
           required
-          style={{
-            width: "100%",
-            padding: "10px",
-            margin: "10px 0",
-          }}
         />
 
-        <button
-          type="submit"
-          style={{
-            padding: "10px 20px",
-            marginTop: "10px",
-          }}
-        >
+        <br />
+        <br />
+
+        <button type="submit">
           Login
         </button>
       </form>
 
       <p>
-        Don't have an account?{" "}
-        <Link to="/register">Register</Link>
+        Don't have an account?
+        <Link to="/register"> Register</Link>
       </p>
     </div>
   );

@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -23,45 +25,35 @@ const Dashboard = () => {
 
       <h2>Welcome, {user?.name}</h2>
 
-      <p>Email: {user?.email}</p>
+      <p>{user?.email}</p>
 
-      <div style={{ marginTop: "30px" }}>
-        <button
-          onClick={() => navigate("/resume-upload")}
-          style={{
-            padding: "10px 20px",
-            margin: "10px",
-            cursor: "pointer",
-          }}
-        >
-          Upload Resume
-        </button>
+      <button
+        onClick={() =>
+          navigate("/resume-upload")
+        }
+      >
+        Resume Upload
+      </button>
 
-        <button
-          onClick={() => navigate("/interview-setup")}
-          style={{
-            padding: "10px 20px",
-            margin: "10px",
-            cursor: "pointer",
-          }}
-        >
-          Start Interview
-        </button>
+      <button
+        onClick={() =>
+          navigate("/interview-setup")
+        }
+        style={{ marginLeft: "10px" }}
+      >
+        Interview Setup
+      </button>
 
-        <button
-          onClick={logout}
-          style={{
-            padding: "10px 20px",
-            margin: "10px",
-            backgroundColor: "red",
-            color: "white",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
-      </div>
+      <button
+        onClick={logout}
+        style={{
+          marginLeft: "10px",
+          background: "red",
+          color: "white",
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 };
