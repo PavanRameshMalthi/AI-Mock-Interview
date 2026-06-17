@@ -1,5 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 
+import ProtectedRoute from "../components/ProtectedRoute";
+
 import Landing from "../pages/Landing/Landing";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
@@ -15,29 +17,51 @@ const AppRoutes = () => {
       <Route path="/" element={<Landing />} />
 
       <Route path="/login" element={<Login />} />
-
       <Route path="/register" element={<Register />} />
 
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/resume-upload"
-        element={<ResumeUpload />}
+        element={
+          <ProtectedRoute>
+            <ResumeUpload />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/interview-setup"
-        element={<InterviewSetup />}
+        element={
+          <ProtectedRoute>
+            <InterviewSetup />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/interview-session"
-        element={<InterviewSession />}
+        element={
+          <ProtectedRoute>
+            <InterviewSession />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/results"
-        element={<Results />}
+        element={
+          <ProtectedRoute>
+            <Results />
+          </ProtectedRoute>
+        }
       />
     </Routes>
   );

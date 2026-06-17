@@ -9,17 +9,19 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
+const evaluationRoutes = require("./routes/evaluationRoutes");
+const historyRoutes = require("./routes/historyRoutes");
 
 const app = express();
 
-// =====================
-// Database Connection
-// =====================
+// ======================
+// Connect Database
+// ======================
 connectDB();
 
-// =====================
+// ======================
 // Middleware
-// =====================
+// ======================
 app.use(cors());
 
 app.use(express.json());
@@ -30,17 +32,18 @@ app.use(
   })
 );
 
-// =====================
-// Static Uploads Folder
-// =====================
+// ======================
+// Static Upload Folder
+// ======================
 app.use(
   "/uploads",
   express.static("uploads")
 );
 
-// =====================
-// API Routes
-// =====================
+// ======================
+// Routes
+// ======================
+
 app.use("/api/auth", authRoutes);
 
 app.use("/api/resume", resumeRoutes);
@@ -50,20 +53,30 @@ app.use(
   interviewRoutes
 );
 
-// =====================
-// Home Route
-// =====================
+app.use(
+  "/api/evaluation",
+  evaluationRoutes
+);
+
+app.use(
+  "/api/history",
+  historyRoutes
+);
+
+// ======================
+// Test Route
+// ======================
 app.get("/", (req, res) => {
-  res.status(200).json({
+  res.json({
     success: true,
     message:
-      "🚀 AI Mock Interview API Running Successfully",
+      "AI Mock Interview API Running",
   });
 });
 
-// =====================
-// 404 Route (Fixed)
-// =====================
+// ======================
+// 404 Handler
+// ======================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -71,10 +84,11 @@ app.use((req, res) => {
   });
 });
 
-// =====================
+// ======================
 // Start Server
-// =====================
-const PORT = process.env.PORT || 5000;
+// ======================
+const PORT =
+  process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(

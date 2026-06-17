@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const InterviewSetup = () => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const InterviewSetup = () => {
     role: "",
     experience: "",
     difficulty: "Medium",
-    questionCount: 10,
+    questionCount: 5,
   });
 
   const handleChange = (e) => {
@@ -18,18 +19,33 @@ const InterviewSetup = () => {
     });
   };
 
-  const handleStartInterview = () => {
+  const handleStartInterview = async () => {
     if (!formData.role || !formData.experience) {
       alert("Please fill all fields");
       return;
     }
 
-    localStorage.setItem(
-      "interviewConfig",
-      JSON.stringify(formData)
-    );
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/interview/generate-questions",
+        formData
+      );
 
-    navigate("/interview-session");
+      localStorage.setItem(
+        "questions",
+        JSON.stringify(res.data.questions)
+      );
+
+      localStorage.setItem(
+        "interviewConfig",
+        JSON.stringify(formData)
+      );
+
+      navigate("/interview-session");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to generate questions");
+    }
   };
 
   return (
@@ -61,42 +77,38 @@ const InterviewSetup = () => {
         </h1>
 
         <label>Job Role</label>
-
         <input
           type="text"
           name="role"
-          placeholder="e.g. Frontend Developer"
+          placeholder="Frontend Developer"
           value={formData.role}
           onChange={handleChange}
           style={inputStyle}
         />
 
         <label>Years of Experience</label>
-
         <input
           type="number"
           name="experience"
-          placeholder="e.g. 2"
+          placeholder="2"
           value={formData.experience}
           onChange={handleChange}
           style={inputStyle}
         />
 
         <label>Difficulty Level</label>
-
         <select
           name="difficulty"
           value={formData.difficulty}
           onChange={handleChange}
           style={inputStyle}
         >
-          <option>Easy</option>
-          <option>Medium</option>
-          <option>Hard</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
         </select>
 
         <label>Number of Questions</label>
-
         <select
           name="questionCount"
           value={formData.questionCount}
@@ -120,7 +132,6 @@ const InterviewSetup = () => {
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",
-            fontSize: "16px",
           }}
         >
           Start Interview

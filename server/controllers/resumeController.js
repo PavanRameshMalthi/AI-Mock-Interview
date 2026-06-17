@@ -1,15 +1,19 @@
-const uploadResume = async (req, res) => {
+const extractResumeText =
+  require("../utils/resumeParser");
+
+const uploadResume = async (
+  req,
+  res
+) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({
-        message: "No file uploaded",
-      });
-    }
+    const resumeText =
+      await extractResumeText(
+        req.file.path
+      );
 
     res.status(200).json({
       success: true,
-      filename: req.file.filename,
-      path: req.file.path,
+      resumeText,
     });
   } catch (error) {
     res.status(500).json({

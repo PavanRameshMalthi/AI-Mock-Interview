@@ -1,39 +1,11 @@
-const model = require("../utils/gemini");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const generateQuestions = async (req, res) => {
-  try {
-    const { resumeText } = req.body;
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY
+);
 
-    const prompt = `
-    Based on this resume:
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash",
+});
 
-    ${resumeText}
-
-    Generate 10 interview questions.
-    Include:
-    - Technical Questions
-    - HR Questions
-    - Project Questions
-
-    Return only questions.
-    `;
-
-    const result = await model.generateContent(prompt);
-
-    const response =
-      result.response.text();
-
-    res.status(200).json({
-      success: true,
-      questions: response,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
-module.exports = {
-  generateQuestions,
-};
+module.exports = model;
