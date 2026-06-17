@@ -27,7 +27,7 @@ const Register = () => {
         formData
       );
 
-      alert("Registration Successful!");
+      showSuccess("Registration Successful");
       navigate("/login");
     } catch (error) {
       alert(

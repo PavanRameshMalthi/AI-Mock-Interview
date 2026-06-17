@@ -1,6 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { showSuccess, showError } from "../../components/UI/Toast";
+import authService from "../../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,6 +11,8 @@ const Login = () => {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -17,80 +20,56 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        formData
-      );
+      setLoading(true);
 
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
+      const response = await authService.login(formData);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(res.data.user)
-      );
+      localStorage.setItem("token", response.token);
 
-      alert("Login Successful");
+      showSuccess("Login Successful");
 
       navigate("/dashboard");
     } catch (error) {
-      alert(
+      showError(
         error.response?.data?.message ||
-          "Login Failed"
+          "Invalid Credentials"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        width: "400px",
-        margin: "50px auto",
-        textAlign: "center",
-      }}
-    >
-      <h1>Login</h1>
+    <div className="login-page">
+      <h2>Login</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <input
           type="email"
           name="email"
-          placeholder="Email"
+          placeholder="Enter Email"
           value={formData.email}
           onChange={handleChange}
           required
         />
 
-        <br />
-        <br />
-
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Enter Password"
           value={formData.password}
           onChange={handleChange}
           required
         />
 
-        <br />
-        <br />
-
-        <button type="submit">
-          Login
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging In..." : "Login"}
         </button>
       </form>
-
-      <p>
-        Don't have an account?
-        <Link to="/register"> Register</Link>
-      </p>
     </div>
   );
 };
