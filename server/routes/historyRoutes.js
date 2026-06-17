@@ -5,9 +5,10 @@ const {
 } = require(
   "../controllers/historyController"
 );
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/", getHistory);
+router.get("/", authMiddleware, getHistory);
 
 module.exports = router;

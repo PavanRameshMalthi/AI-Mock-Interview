@@ -1,20 +1,20 @@
-const Interview =
-  require("../models/Interview");
+const Interview = require("../models/Interview");
 
-const getHistory = async (
-  req,
-  res
-) => {
+const getHistory = async (req, res) => {
   try {
-    const interviews =
-      await Interview.find().sort({
-        createdAt: -1,
-      });
+    const interviews = await Interview.find({ user: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(25)
+      .select("role difficulty score feedback createdAt");
 
-    res.json(interviews);
-  } catch (error) {
+    res.json({
+      success: true,
+      interviews,
+    });
+  } catch {
     res.status(500).json({
-      message: error.message,
+      success: false,
+      message: "Failed to load interview history",
     });
   }
 };

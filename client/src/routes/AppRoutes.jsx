@@ -10,6 +10,7 @@ import ResumeUpload from "../pages/ResumeUpload/ResumeUpload";
 import InterviewSetup from "../pages/InterviewSetup/InterviewSetup";
 import InterviewSession from "../pages/InterviewSession/InterviewSession";
 import Results from "../pages/Results/Results";
+import History from "../pages/History/History";
 
 const AppRoutes = () => {
   return (
@@ -60,6 +61,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Results />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <History />
           </ProtectedRoute>
         }
       />

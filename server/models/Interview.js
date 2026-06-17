@@ -1,15 +1,19 @@
+// server/models/Interview.js
 const mongoose = require("mongoose");
 
 const interviewSchema = new mongoose.Schema(
   {
-    role: String,
-
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    role: { type: String, required: true, trim: true },
+    experience: { type: String, trim: true },
+    difficulty: { type: String, trim: true },
     questions: [String],
-
     answers: [String],
-
     score: Number,
-
     feedback: {
       technical: Number,
       communication: Number,
@@ -17,13 +21,9 @@ const interviewSchema = new mongoose.Schema(
       overall: Number,
       feedback: String,
     },
+    resumeText: String,
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model(
-  "Interview",
-  interviewSchema
-);
+module.exports = mongoose.model("Interview", interviewSchema);

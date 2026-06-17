@@ -1,62 +1,103 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  showSuccess,
+  dismissToast,
   showError,
   showLoading,
-  dismissToast,
+  showSuccess,
 } from "../../components/UI/Toast";
-
 import resumeService from "../../services/resumeService";
 
 const ResumeUpload = () => {
   const [file, setFile] = useState(null);
+  const [resumeText, setResumeText] = useState(
+    localStorage.getItem("resumeText") || ""
+  );
 
-  const handleUpload = async () => {
-    if (!file) {
-      showError("Please Select Resume");
+  const handleFileChange = (event) => {
+    const selected = event.target.files?.[0] || null;
+
+    if (selected && selected.type !== "application/pdf") {
+      showError("Please select a PDF file");
+      event.target.value = "";
+      setFile(null);
       return;
     }
 
-    const toastId = showLoading(
-      "Uploading Resume..."
-    );
+    if (selected && selected.size > 5 * 1024 * 1024) {
+      showError("Resume must be smaller than 5 MB");
+      event.target.value = "";
+      setFile(null);
+      return;
+    }
+
+    setFile(selected);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      showError("Choose a PDF resume first");
+      return;
+    }
+
+    const toastId = showLoading("Reading resume...");
 
     try {
       const formData = new FormData();
-
       formData.append("resume", file);
 
-      await resumeService.uploadResume(formData);
-
+      const response = await resumeService.uploadResume(formData);
+      localStorage.setItem("resumeText", response.resumeText);
+      setResumeText(response.resumeText);
       dismissToast(toastId);
-
-      showSuccess("Resume Uploaded Successfully");
+      showSuccess("Resume uploaded");
     } catch (error) {
       dismissToast(toastId);
-
-      showError(
-        error.response?.data?.message ||
-          "Upload Failed"
-      );
+      showError(error.response?.data?.message || "Upload failed");
     }
   };
 
   return (
-    <div>
-      <h2>Upload Resume</h2>
+    <main className="app-shell narrow">
+      <header className="page-header">
+        <p className="eyebrow">Resume context</p>
+        <h1>Upload resume</h1>
+        <p className="muted">
+          PDF only, up to 5 MB. The extracted text stays in this browser for
+          the next interview setup.
+        </p>
+      </header>
 
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={(e) =>
-          setFile(e.target.files[0])
-        }
-      />
+      <section className="panel">
+        <label className="file-drop">
+          <input accept=".pdf,application/pdf" onChange={handleFileChange} type="file" />
+          <span>{file ? file.name : "Choose a PDF resume"}</span>
+        </label>
+        <div className="button-row">
+          <button className="btn btn-primary" onClick={handleUpload}>
+            Upload resume
+          </button>
+          <Link className="btn btn-secondary" to="/interview-setup">
+            Continue to setup
+          </Link>
+        </div>
+      </section>
 
-      <button onClick={handleUpload}>
-        Upload Resume
-      </button>
-    </div>
+      {resumeText ? (
+        <section className="panel">
+          <div className="section-heading">
+            <h2>Extracted preview</h2>
+            <span>{resumeText.length} characters</span>
+          </div>
+          <p className="resume-preview">{resumeText.slice(0, 900)}</p>
+        </section>
+      ) : (
+        <p className="empty-state">
+          No resume text yet. You can still generate general interview
+          questions without uploading a resume.
+        </p>
+      )}
+    </main>
   );
 };
 

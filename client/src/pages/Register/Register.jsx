@@ -1,173 +1,104 @@
-```jsx
 import { useState } from "react";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
-
-import {
-  showSuccess,
-  showError,
-} from "../../components/UI/Toast";
+import { Link, useNavigate } from "react-router-dom";
+import { showError, showSuccess } from "../../components/UI/Toast";
+import authService from "../../services/authService";
 
 const Register = () => {
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (event) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [event.target.name]: event.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password
-    ) {
-      return showError(
-        "Please fill all fields"
-      );
+    if (formData.password.length < 8) {
+      showError("Password must be at least 8 characters");
+      return;
     }
 
+    setLoading(true);
+
     try {
-      setLoading(true);
-
-      await axios.post(
-        "http://localhost:5000/api/auth/register",
-        formData
-      );
-
-      showSuccess(
-        "Registration Successful"
-      );
-
+      await authService.register(formData);
+      showSuccess("Account created. Please sign in.");
       navigate("/login");
     } catch (error) {
-      showError(
-        error.response?.data?.message ||
-          "Registration Failed"
-      );
+      showError(error.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background:
-          "linear-gradient(135deg,#667eea,#764ba2)",
-      }}
-    >
-      <div
-        style={{
-          width: "400px",
-          background: "#fff",
-          padding: "30px",
-          borderRadius: "15px",
-          boxShadow:
-            "0 10px 30px rgba(0,0,0,0.2)",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: "25px",
-          }}
-        >
-          Create Account
-        </h1>
+    <main className="auth-page">
+      <section className="auth-card">
+        <p className="eyebrow">Get interview ready</p>
+        <h1>Create account</h1>
+        <p className="muted">Use a work email or personal email you trust.</p>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label>
+            Full name
+            <input
+              autoComplete="name"
+              name="name"
+              onChange={handleChange}
+              placeholder="Alex Morgan"
+              required
+              type="text"
+              value={formData.name}
+            />
+          </label>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
+          <label>
+            Email
+            <input
+              autoComplete="email"
+              name="email"
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
+              type="email"
+              value={formData.email}
+            />
+          </label>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
+          <label>
+            Password
+            <input
+              autoComplete="new-password"
+              minLength={8}
+              name="password"
+              onChange={handleChange}
+              placeholder="At least 8 characters"
+              required
+              type="password"
+              value={formData.password}
+            />
+          </label>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px",
-              border: "none",
-              borderRadius: "8px",
-              background: "#667eea",
-              color: "#fff",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            {loading
-              ? "Registering..."
-              : "Register"}
+          <button className="btn btn-primary full-width" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
-        <p
-          style={{
-            marginTop: "20px",
-            textAlign: "center",
-          }}
-        >
-          Already have an account?{" "}
-          <Link to="/login">
-            Login
-          </Link>
+        <p className="auth-switch">
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 };
 
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  marginBottom: "15px",
-  border: "1px solid #ccc",
-  borderRadius: "8px",
-  fontSize: "15px",
-  boxSizing: "border-box",
-};
-
 export default Register;
-```

@@ -1,31 +1,45 @@
 import { Link } from "react-router-dom";
+import { FaArrowRight, FaCheckCircle } from "react-icons/fa";
 
 const Landing = () => {
   return (
-    <div
-      style={{
-        textAlign: "center",
-        marginTop: "100px",
-      }}
-    >
-      <h1>AI Mock Interview Platform</h1>
-
-      <p>
-        Practice interviews with AI and improve your skills.
-      </p>
-
-      <div style={{ marginTop: "20px" }}>
-        <Link to="/login">
-          <button>Login</button>
-        </Link>
-
-        <Link to="/register">
-          <button style={{ marginLeft: "10px" }}>
-            Register
-          </button>
-        </Link>
-      </div>
-    </div>
+    <main className="landing-page">
+      <section className="hero-section">
+        <div className="hero-copy">
+          <p className="eyebrow">AI Mock Interview</p>
+          <h1>Practice interviews with focused AI feedback.</h1>
+          <p className="hero-text">
+            Upload a resume, generate role-specific questions, answer at your
+            pace, and review a scorecard that highlights what to improve next.
+          </p>
+          <div className="hero-actions">
+            <Link className="btn btn-primary" to="/register">
+              Start practicing <FaArrowRight aria-hidden="true" />
+            </Link>
+            <Link className="btn btn-secondary" to="/login">
+              Sign in
+            </Link>
+          </div>
+        </div>
+        <div className="hero-panel" aria-label="Interview readiness summary">
+          <div className="score-ring">86</div>
+          <div>
+            <h2>Readiness snapshot</h2>
+            <ul className="feature-list">
+              <li>
+                <FaCheckCircle aria-hidden="true" /> Technical depth tracked
+              </li>
+              <li>
+                <FaCheckCircle aria-hidden="true" /> Communication feedback
+              </li>
+              <li>
+                <FaCheckCircle aria-hidden="true" /> Resume-aware prompts
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 };
 
