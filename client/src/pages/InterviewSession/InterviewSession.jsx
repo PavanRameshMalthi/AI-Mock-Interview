@@ -46,10 +46,10 @@ const InterviewSession = () => {
   };
 
   const previousQuestion = () => {
-    saveCurrentAnswer();
+    const updatedAnswers = saveCurrentAnswer();
     const previousIndex = currentQuestion - 1;
     setCurrentQuestion(previousIndex);
-    setAnswer(answers[previousIndex] || "");
+    setAnswer(updatedAnswers[previousIndex] || "");
   };
 
   if (!questions.length) {
