@@ -299,7 +299,7 @@ cd client
 docker build -t ai-mock-interview-client .
 ```
 
-For production, replace placeholder secrets in `docker-compose.yml` with environment-managed values.
+For production, provide real secrets through your environment manager instead of hardcoding values in `docker-compose.yml`.
 
 ## Future Enhancements
 
