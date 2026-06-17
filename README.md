@@ -145,6 +145,34 @@ cd server
 npm start
 ```
 
+## Testing Instructions
+
+Run frontend tests with coverage:
+
+```bash
+cd client
+npm test
+```
+
+Run backend API tests with coverage:
+
+```bash
+cd server
+npm test
+```
+
+Current verified coverage:
+
+- Frontend statements: 82%+
+- Backend statements: 81%+
+
+Run lint:
+
+```bash
+cd client
+npm run lint
+```
+
 ## API Documentation
 
 Base URL:
@@ -255,6 +283,23 @@ Production checklist:
 - Enable HTTPS
 - Configure CORS for production domains only
 - Monitor server logs and API errors
+
+## Docker
+
+Build and run MongoDB plus the backend with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The frontend Dockerfile builds a static bundle that can be served by Nginx:
+
+```bash
+cd client
+docker build -t ai-mock-interview-client .
+```
+
+For production, replace placeholder secrets in `docker-compose.yml` with environment-managed values.
 
 ## Future Enhancements
 

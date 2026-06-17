@@ -1,0 +1,73 @@
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
+import ResumeUpload from "./ResumeUpload";
+import resumeService from "../../services/resumeService";
+import { showError } from "../../components/UI/Toast";
+
+jest.mock("../../services/resumeService", () => ({
+  uploadResume: jest.fn(),
+}));
+
+jest.mock("../../components/UI/Toast", () => ({
+  showLoading: jest.fn(() => "toast-id"),
+  dismissToast: jest.fn(),
+  showSuccess: jest.fn(),
+  showError: jest.fn(),
+}));
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  localStorage.clear();
+});
+
+test("uploads a valid PDF resume and stores extracted text", async () => {
+  resumeService.uploadResume.mockResolvedValue({ resumeText: "Resume text" });
+  const file = new File(["content"], "resume.pdf", {
+    type: "application/pdf",
+  });
+
+  render(
+    <MemoryRouter>
+      <ResumeUpload />
+    </MemoryRouter>
+  );
+
+  await userEvent.upload(screen.getByLabelText(/choose a pdf resume/i), file);
+  await userEvent.click(screen.getByRole("button", { name: /upload resume/i }));
+
+  await waitFor(() => {
+    expect(resumeService.uploadResume).toHaveBeenCalled();
+  });
+  expect(localStorage.getItem("resumeText")).toBe("Resume text");
+});
+
+test("rejects non-PDF files before upload", async () => {
+  const user = userEvent.setup({ applyAccept: false });
+  const file = new File(["content"], "resume.txt", {
+    type: "text/plain",
+  });
+
+  render(
+    <MemoryRouter>
+      <ResumeUpload />
+    </MemoryRouter>
+  );
+
+  await user.upload(screen.getByLabelText(/choose a pdf resume/i), file);
+
+  expect(showError).toHaveBeenCalledWith("Please select a PDF file");
+  expect(resumeService.uploadResume).not.toHaveBeenCalled();
+});
+
+test("requires a selected file before uploading", async () => {
+  render(
+    <MemoryRouter>
+      <ResumeUpload />
+    </MemoryRouter>
+  );
+
+  await userEvent.click(screen.getByRole("button", { name: /upload resume/i }));
+
+  expect(showError).toHaveBeenCalledWith("Choose a PDF resume first");
+});

@@ -12,3 +12,6 @@ server/uploads/
 
 dist/
 build/
+coverage/
+client/coverage/
+server/coverage/
