@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 
 const connectDB = require("./config/db");
@@ -12,10 +12,31 @@ const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const historyRoutes = require("./routes/historyRoutes");
+const sanitizeRequest = require("./middleware/sanitizeMiddleware");
+const { errorHandler, notFound } = require("./middleware/errorMiddleware");
+const logger = require("./utils/logger");
 
 const PORT = process.env.PORT || 5000;
 const app = express();
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+const validateRuntimeConfig = () => {
+  const warnings = [];
+
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    warnings.push("JWT_SECRET is missing or shorter than 32 characters.");
+  }
+
+  if (!process.env.GEMINI_API_KEY) {
+    warnings.push("GEMINI_API_KEY is missing. AI routes will use local fallbacks.");
+  }
+
+  warnings.forEach((warning) => logger.warn(warning));
+};
+
+const allowedOrigins = (
+  process.env.CLIENT_URL ||
+  process.env.FRONTEND_URL ||
+  "http://localhost:5173"
+)
   .split(",")
   .map((origin) => origin.trim());
 
@@ -34,7 +55,12 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(cookieParser());
+app.use(sanitizeRequest);
+app.use((req, res, next) => {
+  req.log = logger.child({ requestId: req.headers["x-request-id"] });
+  next();
+});
 
 app.use(
   "/api/",
@@ -43,6 +69,20 @@ app.use(
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
+  })
+);
+
+app.use(
+  "/api/auth/login",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      message: "Too many login attempts. Try again in 15 minutes.",
+    },
   })
 );
 
@@ -56,29 +96,16 @@ app.get("/", (req, res) =>
   res.json({ success: true, message: "AI Mock Interview API Running" })
 );
 
-app.use((req, res) =>
-  res.status(404).json({ success: false, message: "Route not found" })
-);
-
-app.use((error, req, res, next) => {
-  if (res.headersSent) {
-    return next(error);
-  }
-
-  const status = error.name === "MulterError" ? 400 : 500;
-
-  res.status(status).json({
-    success: false,
-    message: error.message || "Something went wrong",
-  });
-});
+app.use(notFound);
+app.use(errorHandler);
 
 const startServer = async () => {
   try {
+    validateRuntimeConfig();
     await connectDB();
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
   } catch (error) {
-    console.error("Failed to start server:", error.message);
+    logger.error({ err: error }, "Failed to start server");
     process.exit(1);
   }
 };

@@ -41,6 +41,83 @@ textarea {
   font: inherit;
 }
 
+.password-input {
+  position: relative;
+  display: block;
+}
+
+.password-input input {
+  padding-right: 48px;
+}
+
+.icon-button {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.auth-providers {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.password-helper {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0c121d;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.strength-row {
+  display: grid;
+  gap: 8px;
+}
+
+.check-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check-list li::before {
+  content: "x";
+  margin-right: 8px;
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.check-list li.pass::before {
+  content: "OK";
+  color: var(--primary);
+}
+
+.check-list li.fail::before {
+  content: "x";
+  color: var(--danger);
+}
+
 button {
   border: 0;
 }
@@ -302,7 +379,8 @@ textarea {
 
 .stats-grid,
 .action-grid,
-.results-grid {
+.results-grid,
+.analytics-grid {
   display: grid;
   gap: 16px;
 }
@@ -315,6 +393,11 @@ textarea {
 .action-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 16px;
+}
+
+.analytics-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
 }
 
 .stat-card,
@@ -479,6 +562,31 @@ textarea {
   gap: 16px;
 }
 
+.career-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.career-grid div {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0c121d;
+}
+
+.career-grid h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.career-grid p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .keyword-grid h3 {
   margin: 0 0 8px;
   font-size: 1rem;
@@ -527,6 +635,48 @@ th {
   animation: spin 0.9s linear infinite;
 }
 
+.mini-chart {
+  height: 160px;
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0c121d;
+}
+
+.mini-chart span {
+  flex: 1;
+  min-width: 12px;
+  border-radius: 8px 8px 0 0;
+  background: var(--primary);
+}
+
+.mini-chart.ats-chart span {
+  background: var(--accent);
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag-list span {
+  padding: 8px 10px;
+  border: 1px solid rgba(61, 214, 189, 0.35);
+  border-radius: 8px;
+  background: rgba(61, 214, 189, 0.1);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.tag-list.warning span {
+  border-color: rgba(251, 113, 133, 0.35);
+  background: rgba(251, 113, 133, 0.08);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -537,7 +687,8 @@ th {
   .hero-section,
   .stats-grid,
   .action-grid,
-  .results-grid {
+  .results-grid,
+  .analytics-grid {
     grid-template-columns: 1fr;
   }
 
@@ -572,7 +723,8 @@ th {
 
   .form-row,
   .score-row,
-  .keyword-grid {
+  .keyword-grid,
+  .career-grid {
     grid-template-columns: 1fr;
   }
 }

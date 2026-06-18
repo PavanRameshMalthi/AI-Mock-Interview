@@ -5,6 +5,7 @@ import dashboardService from "../../services/dashboardService";
 
 jest.mock("../../services/dashboardService", () => ({
   getDashboardSummary: jest.fn(),
+  getAnalytics: jest.fn(),
 }));
 
 test("renders dashboard summary and actions", async () => {
@@ -16,6 +17,12 @@ test("renders dashboard summary and actions", async () => {
     completed: 2,
     averageScore: 82,
     recent: [{ _id: "1", role: "Frontend Developer", score: 84 }],
+  });
+  dashboardService.getAnalytics.mockResolvedValue({
+    summary: { improvementPercentage: 10 },
+    trends: { interviewScores: [], atsScores: [] },
+    strongSkillAreas: [],
+    weakSkillAreas: [],
   });
 
   render(

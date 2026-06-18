@@ -35,6 +35,27 @@ const SECTION_PATTERNS = {
   projects: /(projects|portfolio|case study|built|developed)/i,
 };
 
+const SKILL_TERMS = [
+  "javascript",
+  "typescript",
+  "react",
+  "node",
+  "express",
+  "mongodb",
+  "sql",
+  "python",
+  "java",
+  "html",
+  "css",
+  "redux",
+  "docker",
+  "aws",
+  "analytics",
+  "accessibility",
+  "testing",
+  "api",
+];
+
 const clampScore = (value) => Math.min(Math.max(Math.round(value), 0), 100);
 
 const tokenize = (text) =>
@@ -71,6 +92,9 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
       level: "Needs work",
       matchedKeywords: [],
       missingKeywords: getRoleKeywords(role).slice(0, 8),
+      skillsDetected: [],
+      strengths: [],
+      weaknesses: ["Resume text could not be extracted."],
       sectionScores: {
         contact: 0,
         skills: 0,
@@ -117,8 +141,25 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
   );
 
   const recommendations = [];
+  const strengths = [];
+  const weaknesses = [];
+  const skillsDetected = SKILL_TERMS.filter((skill) => resumeTokens.has(skill));
+
+  Object.entries(sectionScores).forEach(([section, sectionValue]) => {
+    if (sectionValue === 100) {
+      strengths.push(`${section[0].toUpperCase()}${section.slice(1)} section detected.`);
+    } else {
+      weaknesses.push(`Missing or unclear ${section} section.`);
+    }
+  });
+
+  if (matchedKeywords.length) {
+    strengths.push(`Matches ${matchedKeywords.length} target role keywords.`);
+  }
+
   if (missingKeywords.length) {
     recommendations.push(`Add relevant role keywords: ${missingKeywords.slice(0, 5).join(", ")}.`);
+    weaknesses.push("Some target role keywords are missing.");
   }
   if (sectionScores.projects === 0) {
     recommendations.push("Add a projects section with measurable outcomes.");
@@ -135,6 +176,9 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
     level: getLevel(score),
     matchedKeywords: matchedKeywords.slice(0, 12),
     missingKeywords,
+    skillsDetected,
+    strengths: strengths.slice(0, 6),
+    weaknesses: weaknesses.slice(0, 6),
     sectionScores,
     recommendations,
   };

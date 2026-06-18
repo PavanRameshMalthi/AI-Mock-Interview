@@ -18,17 +18,73 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function requiredPassword() {
+        return this.authProvider === "local";
+      },
+      select: false,
     },
+
+    phone: {
+      type: String,
+      trim: true,
+      sparse: true,
+      index: true,
+    },
+
+    profilePicture: String,
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google", "linkedin", "phone"],
+      default: "local",
+    },
+
+    googleId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+
+    linkedinId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+
+    linkedinHeadline: String,
+
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    refreshTokenHash: String,
+    passwordResetTokenHash: String,
+    passwordResetExpires: Date,
 
     role: {
       type: String,
       default: "student",
+      enum: ["student", "admin"],
     },
   },
   {
     timestamps: true,
   }
 );
+
+userSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    collation: { locale: "en", strength: 2 },
+  }
+);
+userSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("User", userSchema);

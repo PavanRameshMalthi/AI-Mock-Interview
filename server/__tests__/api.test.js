@@ -56,7 +56,7 @@ describe("auth API", () => {
     const response = await request(app).post("/api/auth/register").send({
       name: "Test User",
       email: "TEST@example.com",
-      password: "Password123",
+      password: "Password123!",
     });
 
     expect(response.status).toBe(201);
@@ -72,7 +72,7 @@ describe("auth API", () => {
     const response = await request(app).post("/api/auth/register").send({
       name: "Test User",
       email: "test@example.com",
-      password: "Password123",
+      password: "Password123!",
     });
 
     expect(response.status).toBe(409);
@@ -85,7 +85,7 @@ describe("auth API", () => {
   });
 
   test("logs in a valid user", async () => {
-    const hashedPassword = await bcrypt.hash("Password123", 4);
+    const hashedPassword = await bcrypt.hash("Password123!", 4);
     User.findOne.mockResolvedValue({
       _id: "user-1",
       name: "Test User",
@@ -96,7 +96,7 @@ describe("auth API", () => {
 
     const response = await request(app).post("/api/auth/login").send({
       email: "test@example.com",
-      password: "Password123",
+      password: "Password123!",
     });
 
     expect(response.status).toBe(200);

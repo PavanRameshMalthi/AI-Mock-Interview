@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { showError, showSuccess } from "../../components/UI/Toast";
+import PasswordField, { PasswordStrength } from "../../components/UI/PasswordField";
+import { getPasswordChecks } from "../../utils/passwordUtils";
 import authService from "../../services/authService";
 
 const Register = () => {
@@ -10,7 +12,19 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
+
+  const checks = getPasswordChecks(formData.password);
+  const passwordReady = Object.values(checks).every(Boolean);
+  const passwordsMatch =
+    formData.password && formData.password === formData.confirmPassword;
+  const canSubmit =
+    formData.name.trim() &&
+    formData.email.trim() &&
+    passwordReady &&
+    passwordsMatch &&
+    !loading;
 
   const handleChange = (event) => {
     setFormData({
@@ -22,15 +36,26 @@ const Register = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (formData.password.length < 8) {
-      showError("Password must be at least 8 characters");
+    if (!passwordReady) {
+      showError(
+        "Password must include uppercase, lowercase, number, and special character"
+      );
+      return;
+    }
+
+    if (!passwordsMatch) {
+      showError("Passwords do not match");
       return;
     }
 
     setLoading(true);
 
     try {
-      await authService.register(formData);
+      await authService.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
       showSuccess("Account created. Please sign in.");
       navigate("/login");
     } catch (error) {
@@ -38,6 +63,10 @@ const Register = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const showProviderSetup = () => {
+    showError("This sign-up provider needs production credentials first");
   };
 
   return (
@@ -74,24 +103,43 @@ const Register = () => {
             />
           </label>
 
-          <label>
-            Password
-            <input
-              autoComplete="new-password"
-              minLength={8}
-              name="password"
-              onChange={handleChange}
-              placeholder="At least 8 characters"
-              required
-              type="password"
-              value={formData.password}
-            />
-          </label>
+          <PasswordField
+            autoComplete="new-password"
+            onChange={handleChange}
+            placeholder="Use a strong password"
+            value={formData.password}
+          />
 
-          <button className="btn btn-primary full-width" disabled={loading}>
+          <PasswordField
+            autoComplete="new-password"
+            label="Confirm password"
+            name="confirmPassword"
+            onChange={handleChange}
+            placeholder="Re-enter your password"
+            value={formData.confirmPassword}
+          />
+
+          <PasswordStrength
+            confirmPassword={formData.confirmPassword}
+            password={formData.password}
+          />
+
+          <button className="btn btn-primary full-width" disabled={!canSubmit}>
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
+
+        <div className="auth-providers" aria-label="Alternative sign up options">
+          <button className="btn btn-secondary full-width" onClick={showProviderSetup} type="button">
+            Sign up with Google
+          </button>
+          <button className="btn btn-secondary full-width" onClick={showProviderSetup} type="button">
+            Sign up with LinkedIn
+          </button>
+          <button className="btn btn-secondary full-width" onClick={showProviderSetup} type="button">
+            Sign up with Phone Number
+          </button>
+        </div>
 
         <p className="auth-switch">
           Already have an account? <Link to="/login">Sign in</Link>

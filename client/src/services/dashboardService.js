@@ -1,4 +1,5 @@
 import historyService from "./historyService";
+import api from "./api";
 
 const getDashboardSummary = async () => {
   const data = await historyService.getHistory();
@@ -18,6 +19,12 @@ const getDashboardSummary = async () => {
   };
 };
 
+const getAnalytics = async () => {
+  const response = await api.get("/history/analytics");
+  return response.data;
+};
+
 export default {
   getDashboardSummary,
+  getAnalytics,
 };

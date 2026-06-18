@@ -11,12 +11,20 @@ const Dashboard = () => {
     averageScore: 0,
     recent: [],
   });
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dashboardService
-      .getDashboardSummary()
-      .then(setSummary)
-      .catch(() => {});
+    Promise.all([
+      dashboardService.getDashboardSummary(),
+      dashboardService.getAnalytics().catch(() => null),
+    ])
+      .then(([summaryData, analyticsData]) => {
+        setSummary(summaryData);
+        setAnalytics(analyticsData);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const logout = () => {
@@ -41,15 +49,15 @@ const Dashboard = () => {
       <section className="stats-grid">
         <article className="stat-card">
           <span>Completed interviews</span>
-          <strong>{summary.completed}</strong>
+          <strong>{loading ? "..." : summary.completed}</strong>
         </article>
         <article className="stat-card">
           <span>Average score</span>
-          <strong>{summary.averageScore}%</strong>
+          <strong>{loading ? "..." : `${summary.averageScore}%`}</strong>
         </article>
         <article className="stat-card">
-          <span>Next step</span>
-          <strong>Practice</strong>
+          <span>Improvement</span>
+          <strong>{analytics?.summary ? `${analytics.summary.improvementPercentage}%` : "Practice"}</strong>
         </article>
       </section>
 
@@ -99,6 +107,70 @@ const Dashboard = () => {
             scorecard.
           </p>
         )}
+      </section>
+
+      <section className="analytics-grid">
+        <article className="panel">
+          <h2>Interview score trend</h2>
+          {analytics?.trends?.interviewScores?.length ? (
+            <div className="mini-chart">
+              {analytics.trends.interviewScores.slice(-8).map((item, index) => (
+                <span
+                  aria-label={`${item.role} ${item.score}%`}
+                  key={`${item.date}-${index}`}
+                  style={{ height: `${Math.max(item.score, 6)}%` }}
+                  title={`${item.role}: ${item.score}%`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <h2>ATS score trend</h2>
+          {analytics?.trends?.atsScores?.length ? (
+            <div className="mini-chart ats-chart">
+              {analytics.trends.atsScores.slice(-8).map((item, index) => (
+                <span
+                  aria-label={`${item.role || "Resume"} ${item.score}%`}
+                  key={`${item.date}-${index}`}
+                  style={{ height: `${Math.max(item.score, 6)}%` }}
+                  title={`${item.role || "Resume"}: ${item.score}%`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <h2>Strong skill areas</h2>
+          {analytics?.strongSkillAreas?.length ? (
+            <div className="tag-list">
+              {analytics.strongSkillAreas.map((item) => (
+                <span key={item.name}>{item.name}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <h2>Weak skill areas</h2>
+          {analytics?.weakSkillAreas?.length ? (
+            <div className="tag-list warning">
+              {analytics.weakSkillAreas.map((item) => (
+                <span key={item.name}>{item.name}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
       </section>
     </main>
   );

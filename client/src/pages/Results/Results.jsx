@@ -23,6 +23,7 @@ const Results = () => {
 
       const response = await api.post("/evaluation/evaluate", {
         role: config.role,
+        difficulty: config.difficulty,
         questions,
         answers,
         resumeText,
@@ -52,21 +53,48 @@ const Results = () => {
 
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const config = JSON.parse(localStorage.getItem("interviewConfig") || "{}");
+    const lines = [
+      "AI Mock Interview Report",
+      `Candidate: ${user?.name || "Candidate"}`,
+      `Date: ${new Date().toLocaleDateString()}`,
+      `Interview Role: ${config.role || "N/A"}`,
+      `Difficulty: ${config.difficulty || "N/A"}`,
+      `Interview Score: ${result.overall}/100`,
+      `Technical: ${result.technical}/100`,
+      `Communication: ${result.communication}/100`,
+      `Problem Solving: ${result.problemSolving}/100`,
+    ];
 
     doc.setFontSize(18);
-    doc.text("AI Mock Interview Report", 20, 20);
+    doc.text(lines[0], 20, 20);
     doc.setFontSize(12);
-    doc.text(`Overall Score: ${result.overall}`, 20, 40);
-    doc.text(`Technical: ${result.technical}`, 20, 55);
-    doc.text(`Communication: ${result.communication}`, 20, 70);
-    doc.text(`Problem Solving: ${result.problemSolving}`, 20, 85);
+    lines.slice(1).forEach((line, index) => doc.text(line, 20, 38 + index * 10));
+    let y = 128;
     if (result.atsScore) {
-      doc.text(`ATS Fit: ${result.atsScore.score} (${result.atsScore.level})`, 20, 100);
+      doc.text(`ATS Score: ${result.atsScore.score}/100 (${result.atsScore.level})`, 20, y);
+      y += 12;
+      doc.text(`Weak Areas: ${(result.atsScore.weaknesses || result.atsScore.missingKeywords || []).slice(0, 4).join(", ") || "N/A"}`, 20, y, { maxWidth: 170 });
+      y += 18;
+      doc.text(`Strong Areas: ${(result.atsScore.strengths || result.atsScore.matchedKeywords || []).slice(0, 4).join(", ") || "N/A"}`, 20, y, { maxWidth: 170 });
+      y += 18;
     }
-    doc.text("Feedback:", 20, result.atsScore ? 120 : 105);
-    doc.text(result.feedback || "No feedback provided.", 20, result.atsScore ? 135 : 120, {
-      maxWidth: 160,
-    });
+    doc.text("AI Feedback:", 20, y);
+    y += 10;
+    doc.text(result.feedback || "No feedback provided.", 20, y, { maxWidth: 170 });
+    y += 34;
+    doc.text("Suggestions:", 20, y);
+    y += 10;
+    doc.text(
+      (result.atsScore?.recommendations || [
+        "Practice concise STAR stories with measurable outcomes.",
+        "Add stronger role-specific project examples.",
+      ]).join(" "),
+      20,
+      y,
+      { maxWidth: 170 }
+    );
     doc.save("Interview_Report.pdf");
   };
 
@@ -139,6 +167,20 @@ const Results = () => {
       <section className="panel">
         <h2>Feedback</h2>
         <p className="feedback-text">{result.feedback}</p>
+        <div className="career-grid">
+          <div>
+            <h3>Recommended skills</h3>
+            <p>{atsScore?.missingKeywords?.slice(0, 5).join(", ") || "Role-specific examples, communication, and tradeoff analysis."}</p>
+          </div>
+          <div>
+            <h3>Suggested projects</h3>
+            <p>Build one deployable project that demonstrates the target role, measurable impact, and testing discipline.</p>
+          </div>
+          <div>
+            <h3>Career roadmap</h3>
+            <p>Improve weak keywords, practice two more interviews, then update your resume with quantified outcomes.</p>
+          </div>
+        </div>
         <div className="button-row">
           <button className="btn btn-primary" onClick={downloadPDF}>
             Download PDF

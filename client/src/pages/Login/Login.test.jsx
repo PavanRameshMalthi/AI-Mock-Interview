@@ -26,12 +26,12 @@ test("logs in and stores auth state", async () => {
   );
 
   await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-  await userEvent.type(screen.getByLabelText(/password/i), "Password123");
+  await userEvent.type(screen.getByLabelText(/^password$/i), "Password123!");
   await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
   expect(authService.login).toHaveBeenCalledWith({
     email: "test@example.com",
-    password: "Password123",
+    password: "Password123!",
   });
   expect(localStorage.getItem("token")).toBe("token-123");
 });

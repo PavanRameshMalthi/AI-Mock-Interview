@@ -1,6 +1,10 @@
 const model = require("../utils/gemini");
+const mongoose = require("mongoose");
 const Interview = require("../models/Interview");
+const AtsReport = require("../models/AtsReport");
 const { scoreResumeForRole } = require("../utils/atsScorer");
+const { asyncHandler, AppError } = require("../middleware/errorMiddleware");
+const logger = require("../utils/logger");
 
 const clampScore = (value) => {
   const score = Number(value);
@@ -43,9 +47,9 @@ const parseEvaluation = (responseText) => {
   };
 };
 
-const evaluateInterview = async (req, res) => {
-  try {
+const evaluateInterview = asyncHandler(async (req, res) => {
     const role = String(req.body.role || "").trim();
+    const difficulty = String(req.body.difficulty || "Beginner").trim();
     const questions = Array.isArray(req.body.questions)
       ? req.body.questions.map(String)
       : [];
@@ -55,10 +59,7 @@ const evaluateInterview = async (req, res) => {
     const resumeText = String(req.body.resumeText || "").trim();
 
     if (!role || !questions.length || !answers.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Role, questions, and answers are required",
-      });
+      throw new AppError("Role, questions, and answers are required", 400);
     }
 
     const prompt = `
@@ -98,6 +99,7 @@ Return only JSON in this shape:
     await Interview.create({
       user: req.user.id,
       role,
+      difficulty,
       questions,
       answers,
       score: evaluation.overall,
@@ -106,18 +108,21 @@ Return only JSON in this shape:
       resumeText,
     });
 
+    if (atsScore && mongoose.Types.ObjectId.isValid(req.user.id)) {
+      AtsReport.create({
+        user: req.user.id,
+        role,
+        resumeTextLength: resumeText.length,
+        ...atsScore,
+      }).catch((error) => logger.warn({ err: error }, "ATS report persistence failed"));
+    }
+
     res.json({
       success: true,
       ...evaluation,
       atsScore,
     });
-  } catch {
-    res.status(500).json({
-      success: false,
-      message: "Failed to evaluate interview",
-    });
-  }
-};
+});
 
 module.exports = {
   evaluateInterview,
