@@ -13,6 +13,11 @@ const deleteInterview = async (interviewId) => {
   return response.data;
 };
 
+const getInterview = async (interviewId) => {
+  const response = await api.get(`/history/${interviewId}`);
+  return response.data;
+};
+
 const bulkDelete = async (interviewIds) => {
   const response = await api.patch("/history/bulk-delete", { interviewIds });
   return response.data;
@@ -25,6 +30,7 @@ const restoreInterview = async (interviewId) => {
 
 export default {
   getHistory,
+  getInterview,
   deleteInterview,
   bulkDelete,
   restoreInterview,

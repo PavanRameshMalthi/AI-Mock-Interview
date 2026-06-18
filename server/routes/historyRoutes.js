@@ -2,6 +2,7 @@ const express = require("express");
 
 const {
   getHistory,
+  getHistoryItem,
   getAnalytics,
   softDeleteInterview,
   bulkDeleteInterviews,
@@ -17,6 +18,13 @@ const router = express.Router();
 
 router.get("/", authMiddleware, getHistory);
 router.get("/analytics", authMiddleware, getAnalytics);
+router.get(
+  "/:interviewId",
+  authMiddleware,
+  param("interviewId").isMongoId().withMessage("Valid interview id is required"),
+  validate,
+  getHistoryItem
+);
 router.patch(
   "/bulk-delete",
   authMiddleware,

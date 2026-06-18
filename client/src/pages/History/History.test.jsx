@@ -6,6 +6,7 @@ import historyService from "../../services/historyService";
 
 jest.mock("../../services/historyService", () => ({
   getHistory: jest.fn(),
+  getInterview: jest.fn(),
   deleteInterview: jest.fn(),
   bulkDelete: jest.fn(),
   restoreInterview: jest.fn(),
@@ -70,6 +71,7 @@ test("deletes and restores an interview through undo", async () => {
   });
 
   await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
+  await userEvent.click(screen.getByRole("button", { name: /confirm delete/i }));
   await waitFor(() => {
     expect(screen.queryByText("Backend Developer")).not.toBeInTheDocument();
   });

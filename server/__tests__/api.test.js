@@ -12,6 +12,7 @@ jest.mock("../models/User", () => ({
 jest.mock("../models/Interview", () => ({
   create: jest.fn(),
   find: jest.fn(),
+  findOne: jest.fn(),
   findOneAndUpdate: jest.fn(),
   countDocuments: jest.fn(),
   distinct: jest.fn(),
@@ -392,6 +393,43 @@ describe("protected interview APIs", () => {
     expect(Interview.find).toHaveBeenCalledWith({
       user: "user-1",
       deletedAt: null,
+    });
+  });
+
+  test("sorts history by highest score when requested", async () => {
+    const select = jest.fn().mockResolvedValue([]);
+    const limit = jest.fn(() => ({ select }));
+    const sort = jest.fn(() => ({ limit }));
+    Interview.find.mockReturnValue({ sort });
+
+    const response = await request(app)
+      .get("/api/history?sort=score-high")
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(200);
+    expect(sort).toHaveBeenCalledWith({ score: -1, createdAt: -1 });
+  });
+
+  test("returns one interview detail record", async () => {
+    const interviewId = "507f1f77bcf86cd799439011";
+    const select = jest.fn().mockResolvedValue({
+      _id: interviewId,
+      role: "Frontend Developer",
+      questions: ["Question?"],
+      answers: ["Answer."],
+      feedback: { strengths: ["react"] },
+    });
+    Interview.findOne.mockReturnValue({ select });
+
+    const response = await request(app)
+      .get(`/api/history/${interviewId}`)
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.interview.questions).toHaveLength(1);
+    expect(Interview.findOne).toHaveBeenCalledWith({
+      _id: interviewId,
+      user: "user-1",
     });
   });
 

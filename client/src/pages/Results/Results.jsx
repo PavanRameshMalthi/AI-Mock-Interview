@@ -65,6 +65,9 @@ const Results = () => {
       `Technical: ${result.technical}/100`,
       `Communication: ${result.communication}/100`,
       `Problem Solving: ${result.problemSolving}/100`,
+      `Confidence: ${result.confidence || result.communication}/100`,
+      `Relevance: ${result.relevance || result.problemSolving}/100`,
+      `Completeness: ${result.completeness || result.technical}/100`,
     ];
 
     doc.setFontSize(18);
@@ -87,7 +90,7 @@ const Results = () => {
     doc.text("Suggestions:", 20, y);
     y += 10;
     doc.text(
-      (result.atsScore?.recommendations || [
+      (result.suggestions || result.atsScore?.recommendations || [
         "Practice concise STAR stories with measurable outcomes.",
         "Add stronger role-specific project examples.",
       ]).join(" "),
@@ -95,6 +98,14 @@ const Results = () => {
       y,
       { maxWidth: 170 }
     );
+    (result.questionScores || []).slice(0, 3).forEach((item, index) => {
+      y += 24;
+      doc.text(`Q${index + 1}: ${item.question}`, 20, y, { maxWidth: 170 });
+      y += 10;
+      doc.text(`Answer: ${item.answer || "No answer recorded."}`, 20, y, { maxWidth: 170 });
+      y += 14;
+      doc.text(`Expected: ${item.correctAnswer || "See feedback."}`, 20, y, { maxWidth: 170 });
+    });
     doc.save("Interview_Report.pdf");
   };
 
@@ -136,6 +147,9 @@ const Results = () => {
     doc.text(`Issued on ${new Date().toLocaleDateString()}`, 148, 160, {
       align: "center",
     });
+    doc.text(`Verification: AI-MOCK-${Date.now().toString(36).toUpperCase()}`, 148, 170, {
+      align: "center",
+    });
     doc.text("AI Mock Interview Platform", 148, 178, { align: "center" });
     doc.save("Interview_Certificate.pdf");
   };
@@ -170,8 +184,17 @@ const Results = () => {
     ["Technical", result.technical],
     ["Communication", result.communication],
     ["Problem solving", result.problemSolving],
+    ["Confidence", result.confidence || result.communication],
+    ["Relevance", result.relevance || result.problemSolving],
+    ["Completeness", result.completeness || result.technical],
   ];
   const atsScore = result.atsScore;
+  const badges = [
+    result.overall >= 85 ? "Interview ready" : null,
+    result.technical >= 75 ? "Technical signal" : null,
+    result.communication >= 75 ? "Clear communicator" : null,
+    atsScore?.score >= 75 ? "Resume aligned" : null,
+  ].filter(Boolean);
 
   return (
     <main className="app-shell">
@@ -188,6 +211,11 @@ const Results = () => {
           <span>Overall</span>
           <strong>{result.overall}</strong>
           <small>/100</small>
+          <div className="badge-list">
+            {(badges.length ? badges : ["Practice mode"]).map((badge) => (
+              <span key={badge}>{badge}</span>
+            ))}
+          </div>
         </article>
 
         <article className="panel">
@@ -212,7 +240,7 @@ const Results = () => {
         <div className="career-grid">
           <div>
             <h3>Recommended skills</h3>
-            <p>{atsScore?.missingKeywords?.slice(0, 5).join(", ") || "Role-specific examples, communication, and tradeoff analysis."}</p>
+            <p>{result.studyTopics?.slice(0, 5).join(", ") || atsScore?.missingKeywords?.slice(0, 5).join(", ") || "Role-specific examples, communication, and tradeoff analysis."}</p>
           </div>
           <div>
             <h3>Suggested projects</h3>
@@ -220,7 +248,7 @@ const Results = () => {
           </div>
           <div>
             <h3>Career roadmap</h3>
-            <p>Improve weak keywords, practice two more interviews, then update your resume with quantified outcomes.</p>
+            <p>{result.suggestions?.join(" ") || "Improve weak keywords, practice two more interviews, then update your resume with quantified outcomes."}</p>
           </div>
         </div>
         <div className="button-row">
@@ -235,6 +263,28 @@ const Results = () => {
           </Link>
         </div>
       </section>
+
+      {result.questionScores?.length ? (
+        <section className="panel">
+          <h2>Question-level feedback</h2>
+          <div className="qa-list">
+            {result.questionScores.map((item, index) => (
+              <article className="qa-card" key={`${item.question}-${index}`}>
+                <div className="section-heading">
+                  <h3>Question {index + 1}</h3>
+                  <strong>{item.score}%</strong>
+                </div>
+                <p className="question-text">{item.question}</p>
+                <p className="muted"><strong>Your answer:</strong> {item.answer || "No answer recorded."}</p>
+                <p className="muted"><strong>What was correct:</strong> {item.correctSignals?.join(", ") || "Add clearer correct signals next time."}</p>
+                <p className="muted"><strong>What was missing:</strong> {item.incorrectSignals?.join(", ") || "No major missing keywords detected."}</p>
+                <p className="muted"><strong>Correct answer:</strong> {item.correctAnswer}</p>
+                <p className="muted"><strong>Improve:</strong> {item.improvementSuggestion}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {atsScore ? (
         <section className="panel ats-panel">

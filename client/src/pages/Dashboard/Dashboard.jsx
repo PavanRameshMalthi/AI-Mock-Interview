@@ -60,8 +60,16 @@ const Dashboard = () => {
           <strong>{loading ? "..." : `${summary.averageScore}%`}</strong>
         </article>
         <article className="stat-card">
+          <span>Best score</span>
+          <strong>{analytics?.summary ? `${analytics.summary.bestScore}%` : "..."}</strong>
+        </article>
+        <article className="stat-card">
           <span>Improvement</span>
           <strong>{analytics?.summary ? `${analytics.summary.improvementPercentage}%` : "Practice"}</strong>
+        </article>
+        <article className="stat-card">
+          <span>Interview streak</span>
+          <strong>{analytics?.summary ? `${analytics.summary.interviewStreak}d` : "0d"}</strong>
         </article>
       </section>
 
@@ -124,6 +132,43 @@ const Dashboard = () => {
       </section>
 
       <section className="analytics-grid">
+        <article className="panel">
+          <h2>Monthly progress</h2>
+          {analytics?.trends?.monthlyProgress?.length ? (
+            <div className="mini-chart progress-chart">
+              {analytics.trends.monthlyProgress.slice(-6).map((item) => (
+                <span
+                  aria-label={`${item.month} ${item.averageScore}%`}
+                  key={item.month}
+                  style={{ height: `${Math.max(item.averageScore, 6)}%` }}
+                  title={`${item.month}: ${item.averageScore}%`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <h2>Skill growth</h2>
+          {analytics?.skillGrowth?.length ? (
+            <div className="skill-growth">
+              {analytics.skillGrowth.map((item) => (
+                <div className="score-row" key={item.skill}>
+                  <span>{item.skill}</span>
+                  <div className="meter">
+                    <span style={{ width: `${Math.max(item.score, 4)}%` }} />
+                  </div>
+                  <strong>{item.score}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
         <article className="panel">
           <h2>Interview score trend</h2>
           {analytics?.trends?.interviewScores?.length ? (

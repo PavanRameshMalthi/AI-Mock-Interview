@@ -27,9 +27,17 @@ const buildHistoryQuery = (req) => {
   return query;
 };
 
+const buildHistorySort = (req) => {
+  const sort = String(req.query.sort || "newest");
+  if (sort === "oldest") return { createdAt: 1 };
+  if (sort === "score-high") return { score: -1, createdAt: -1 };
+  if (sort === "score-low") return { score: 1, createdAt: -1 };
+  return { createdAt: -1 };
+};
+
 const getHistory = asyncHandler(async (req, res) => {
     const interviews = await Interview.find(buildHistoryQuery(req))
-      .sort({ createdAt: -1 })
+      .sort(buildHistorySort(req))
       .limit(50)
       .select("role difficulty score feedback atsScore createdAt deletedAt");
 
@@ -37,6 +45,22 @@ const getHistory = asyncHandler(async (req, res) => {
       success: true,
       interviews,
     });
+});
+
+const getHistoryItem = asyncHandler(async (req, res) => {
+  const interview = await Interview.findOne({
+    _id: req.params.interviewId,
+    user: req.user.id,
+  }).select("role difficulty questions answers score feedback atsScore resumeText createdAt deletedAt");
+
+  if (!interview) {
+    throw new AppError("Interview not found", 404);
+  }
+
+  res.json({
+    success: true,
+    interview,
+  });
 });
 
 const getAnalytics = asyncHandler(async (req, res) => {
@@ -61,6 +85,10 @@ const getAnalytics = asyncHandler(async (req, res) => {
 
   const firstScore = interviews[0]?.score || 0;
   const latestScore = interviews[interviews.length - 1]?.score || 0;
+  const bestScore = interviews.reduce(
+    (best, item) => Math.max(best, item.score || 0),
+    0
+  );
   const improvementPercentage =
     firstScore > 0 ? Math.round(((latestScore - firstScore) / firstScore) * 100) : 0;
 
@@ -83,13 +111,54 @@ const getAnalytics = asyncHandler(async (req, res) => {
       return map;
     }, new Map());
 
+  const monthlyMap = interviews.reduce((map, item) => {
+    const key = new Date(item.createdAt).toISOString().slice(0, 7);
+    const current = map.get(key) || { month: key, count: 0, totalScore: 0 };
+    current.count += 1;
+    current.totalScore += item.score || 0;
+    map.set(key, current);
+    return map;
+  }, new Map());
+
+  const monthlyProgress = [...monthlyMap.values()].map((item) => ({
+    month: item.month,
+    interviews: item.count,
+    averageScore: item.count ? Math.round(item.totalScore / item.count) : 0,
+  }));
+
+  const dayKeys = new Set(
+    interviews.map((item) => new Date(item.createdAt).toISOString().slice(0, 10))
+  );
+  let streak = 0;
+  const cursor = new Date();
+  while (dayKeys.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  const skillGrowth = [
+    "react",
+    "javascript",
+    "node",
+    "express",
+    "mongodb",
+    "communication",
+    "problem solving",
+    "confidence",
+  ].map((skill) => ({
+    skill,
+    score: Math.min((keywordCounts.get(skill) || 0) * 20, 100),
+  }));
+
   res.json({
     success: true,
     summary: {
       totalInterviews,
       averageScore,
+      bestScore,
       latestScore,
       improvementPercentage,
+      interviewStreak: streak,
       totalAtsReports: atsReports.length,
       averageAtsScore: atsReports.length
         ? Math.round(
@@ -109,7 +178,9 @@ const getAnalytics = asyncHandler(async (req, res) => {
         role: item.role,
         score: item.score || 0,
       })),
+      monthlyProgress,
     },
+    skillGrowth,
     strongSkillAreas,
     weakSkillAreas: [...weakSkillAreas.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -167,6 +238,7 @@ const restoreInterview = asyncHandler(async (req, res) => {
 
 module.exports = {
   getHistory,
+  getHistoryItem,
   getAnalytics,
   softDeleteInterview,
   bulkDeleteInterviews,
