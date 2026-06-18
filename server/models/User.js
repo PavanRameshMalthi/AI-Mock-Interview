@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
     },
@@ -27,8 +26,6 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       trim: true,
-      sparse: true,
-      index: true,
     },
 
     profilePicture: String,
@@ -97,6 +94,6 @@ userSchema.index(
   }
 );
 userSchema.index({ createdAt: -1 });
-userSchema.index({ phone: 1 });
+userSchema.index({ phone: 1 }, { sparse: true });
 
 module.exports = mongoose.model("User", userSchema);

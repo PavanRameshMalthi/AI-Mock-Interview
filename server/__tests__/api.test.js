@@ -60,6 +60,17 @@ describe("auth API", () => {
     expect(response.body.success).toBe(false);
   });
 
+  test("rejects weak passwords during registration", async () => {
+    const response = await request(app).post("/api/auth/register").send({
+      name: "Test User",
+      email: "test@example.com",
+      password: "password",
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Validation failed");
+  });
+
   test("registers a user without returning the password", async () => {
     User.findOne.mockResolvedValue(null);
     User.create.mockResolvedValue({
@@ -98,6 +109,44 @@ describe("auth API", () => {
     const response = await request(app).post("/api/auth/login").send({});
 
     expect(response.status).toBe(400);
+  });
+
+  test("rejects malformed login email", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: "not-an-email",
+      password: "Password123!",
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test("rejects invalid login passwords", async () => {
+    const hashedPassword = await bcrypt.hash("Password123!", 4);
+    User.findOne.mockResolvedValue({
+      _id: "user-1",
+      name: "Test User",
+      email: "test@example.com",
+      password: hashedPassword,
+      role: "student",
+    });
+
+    const response = await request(app).post("/api/auth/login").send({
+      email: "test@example.com",
+      password: "WrongPassword123!",
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body.message).toBe("Invalid email or password");
+  });
+
+  test("rejects NoSQL operator injection in login payloads", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: { $ne: null },
+      password: "Password123!",
+    });
+
+    expect(response.status).toBe(400);
+    expect(User.findOne).not.toHaveBeenCalled();
   });
 
   test("logs in a valid user", async () => {
@@ -159,6 +208,33 @@ describe("protected interview APIs", () => {
     expect(response.status).toBe(401);
   });
 
+  test("rejects expired auth tokens", async () => {
+    const expiredToken = jwt.sign(
+      { id: "user-1" },
+      process.env.JWT_SECRET,
+      { expiresIn: "-1s" }
+    );
+
+    const response = await request(app)
+      .post("/api/interview/generate")
+      .set("Authorization", `Bearer ${expiredToken}`)
+      .send({ role: "Frontend Developer" });
+
+    expect(response.status).toBe(401);
+  });
+
+  test("rejects tampered auth tokens", async () => {
+    const validToken = token();
+    const tamperedToken = `${validToken.slice(0, -1)}x`;
+
+    const response = await request(app)
+      .post("/api/interview/generate")
+      .set("Authorization", `Bearer ${tamperedToken}`)
+      .send({ role: "Frontend Developer" });
+
+    expect(response.status).toBe(401);
+  });
+
   test("blocks unauthenticated question generation", async () => {
     const response = await request(app)
       .post("/api/interview/generate")
@@ -184,6 +260,27 @@ describe("protected interview APIs", () => {
     expect(response.body.questions).toHaveLength(3);
     expect(response.body.questions[0]).toContain("Frontend Developer");
     expect(response.body.atsScore.score).toBeGreaterThan(0);
+  });
+
+  test("rejects missing interview roles", async () => {
+    const response = await request(app)
+      .post("/api/interview/generate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({ role: "" });
+
+    expect(response.status).toBe(400);
+  });
+
+  test("rejects invalid interview difficulties", async () => {
+    const response = await request(app)
+      .post("/api/interview/generate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        difficulty: "Impossible",
+      });
+
+    expect(response.status).toBe(400);
   });
 
   test("parses Gemini JSON question output", async () => {
@@ -367,6 +464,58 @@ describe("resume upload API", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toMatch(/upload/i);
+  });
+
+  test("rejects DOCX resume uploads", async () => {
+    const response = await request(app)
+      .post("/api/resume/upload")
+      .set("Authorization", `Bearer ${token()}`)
+      .attach("resume", Buffer.from("docx"), {
+        filename: "resume.docx",
+        contentType:
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Only PDF resumes are allowed");
+  });
+
+  test("rejects TXT resume uploads", async () => {
+    const response = await request(app)
+      .post("/api/resume/upload")
+      .set("Authorization", `Bearer ${token()}`)
+      .attach("resume", Buffer.from("plain text"), {
+        filename: "resume.txt",
+        contentType: "text/plain",
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  test("rejects corrupted PDF uploads", async () => {
+    const response = await request(app)
+      .post("/api/resume/upload")
+      .set("Authorization", `Bearer ${token()}`)
+      .attach("resume", Buffer.from("not a real pdf"), {
+        filename: "resume.pdf",
+        contentType: "application/pdf",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Uploaded file is not a valid PDF");
+  });
+
+  test("rejects oversized PDF uploads", async () => {
+    const response = await request(app)
+      .post("/api/resume/upload")
+      .set("Authorization", `Bearer ${token()}`)
+      .attach("resume", Buffer.alloc(5 * 1024 * 1024 + 1, "%"), {
+        filename: "resume.pdf",
+        contentType: "application/pdf",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Resume must be smaller than 5 MB");
   });
 
   test("extracts text from a valid PDF upload", async () => {
