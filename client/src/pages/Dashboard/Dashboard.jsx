@@ -48,6 +48,9 @@ const Dashboard = () => {
         <button className="btn btn-ghost" onClick={logout}>
           <FaSignOutAlt aria-hidden="true" /> Logout
         </button>
+        <Link className="btn btn-secondary" to="/profile">
+          Profile
+        </Link>
       </header>
 
       <section className="stats-grid">
@@ -117,10 +120,10 @@ const Dashboard = () => {
         {summary.recent.length ? (
           <div className="list">
             {summary.recent.map((item) => (
-              <div className="list-row" key={item._id}>
+              <Link className="list-row interactive-row" key={item._id} to="/history">
                 <span>{item.role}</span>
                 <strong>{item.score || 0}%</strong>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (

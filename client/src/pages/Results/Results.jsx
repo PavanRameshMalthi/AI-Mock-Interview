@@ -30,6 +30,7 @@ const Results = () => {
       });
 
       setResult(response.data);
+      localStorage.setItem("latestResult", JSON.stringify(response.data));
       if (response.data.atsScore) {
         localStorage.setItem("atsScore", JSON.stringify(response.data.atsScore));
       }
@@ -258,6 +259,9 @@ const Results = () => {
           <button className="btn btn-secondary" onClick={downloadCertificate}>
             Download Certificate
           </button>
+          <Link className="btn btn-secondary" to="/certificate">
+            Certificate Preview
+          </Link>
           <Link className="btn btn-secondary" to="/interview-setup">
             Practice again
           </Link>

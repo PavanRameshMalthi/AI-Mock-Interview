@@ -12,6 +12,8 @@ import InterviewSession from "../pages/InterviewSession/InterviewSession";
 import Results from "../pages/Results/Results";
 import History from "../pages/History/History";
 import Admin from "../pages/Admin/Admin";
+import Profile from "../pages/Profile/Profile";
+import Certificate from "../pages/Certificate/Certificate";
 
 const AppRoutes = () => {
   return (
@@ -80,6 +82,24 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Admin />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/certificate"
+        element={
+          <ProtectedRoute>
+            <Certificate />
           </ProtectedRoute>
         }
       />

@@ -11,6 +11,7 @@ jest.mock("../services/dashboardService", () => ({
   getDashboardSummary: jest.fn(() =>
     Promise.resolve({ completed: 0, averageScore: 0, recent: [] })
   ),
+  getAnalytics: jest.fn(() => Promise.resolve(null)),
 }));
 
 jest.mock("../services/resumeService", () => ({
@@ -36,7 +37,7 @@ test("renders public landing route", () => {
     </MemoryRouter>
   );
 
-  expect(screen.getByRole("heading", { name: /enterprise-grade interview/i })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /master every interview/i })).toBeInTheDocument();
 });
 
 test("redirects protected routes to login", () => {

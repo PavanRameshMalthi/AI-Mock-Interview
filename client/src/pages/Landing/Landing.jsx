@@ -11,18 +11,21 @@ import {
 
 const Landing = () => {
   const stats = [
-    ["95+", "Readiness signals"],
-    ["5 MB", "Secure PDF parsing"],
-    ["24/7", "Practice availability"],
-    ["PDF", "Reports and certificate"],
+    ["10,000+", "Interviews conducted"],
+    ["95%", "Success rate"],
+    ["5000+", "Students assisted"],
+    ["4.9", "Average rating"],
   ];
 
   const features = [
-    [FaFileAlt, "ATS Resume Analyzer", "Score resumes, detect skills, and surface missing role keywords."],
-    [FaMicrophone, "Voice Interview", "Listen to questions and answer with microphone or text fallback."],
-    [FaChartLine, "Analytics Dashboard", "Track interview scores, ATS trends, strengths, and weak areas."],
+    [FaMicrophone, "AI Mock Interviews", "Practice role-specific questions with voice and text answers."],
+    [FaFileAlt, "Resume ATS Analysis", "Score resumes, detect skills, and surface missing role keywords."],
+    [FaCheckCircle, "AI Feedback", "See what was correct, what was missing, and how to improve."],
+    [FaChartLine, "Analytics Dashboard", "Track scores, weak areas, streaks, and skill growth."],
+    [FaChartLine, "Progress Tracking", "Compare weekly, monthly, role-based, and skill-based growth."],
+    [FaFileAlt, "PDF Reports", "Export polished reports with scores, feedback, and recommendations."],
     [FaCertificate, "Certificates", "Download a completion certificate for portfolio-ready proof."],
-    [FaShieldAlt, "Secure Sessions", "JWT auth, refresh cookies, rate limits, validation, and hardened uploads."],
+    [FaShieldAlt, "Interview History", "Search, filter, restore, and review every saved interview."],
   ];
 
   const steps = [
@@ -35,21 +38,29 @@ const Landing = () => {
 
   return (
     <main className="landing-page">
+      <nav className="landing-nav" aria-label="Landing navigation">
+        <Link className="brand-mark" to="/">AI Interview</Link>
+        <div>
+          <Link to="/login">Sign in</Link>
+          <Link className="btn btn-primary compact" to="/register">Start free</Link>
+        </div>
+      </nav>
+
       <section className="hero-section">
         <div className="hero-copy">
           <p className="eyebrow">AI Mock Interview</p>
-          <h1>Enterprise-grade interview practice for job-ready candidates.</h1>
+          <h1>Master Every Interview With AI</h1>
           <p className="hero-text">
-            Upload a resume, practice with AI-generated role questions, analyze
-            ATS fit, track progress, and export polished reports for your final
-            year project or portfolio demo.
+            Practice real interviews, receive AI-powered feedback, improve
+            skills, and track your progress with a recruiter-ready preparation
+            workspace.
           </p>
           <div className="hero-actions">
-            <Link className="btn btn-primary" to="/register">
-              Start practicing <FaArrowRight aria-hidden="true" />
+            <Link className="btn btn-primary" to="/interview-setup">
+              Start Interview <FaArrowRight aria-hidden="true" />
             </Link>
-            <Link className="btn btn-secondary" to="/login">
-              Sign in
+            <Link className="btn btn-secondary" to="/register">
+              Watch Demo
             </Link>
           </div>
         </div>
@@ -115,10 +126,17 @@ const Landing = () => {
       <section className="landing-grid">
         <article className="testimonial-card">
           <p>
-            "The platform feels like a complete placement-prep product: resume
-            scoring, voice practice, analytics, and reports in one place."
+            "This felt like a real placement-prep product: resume scoring,
+            voice practice, analytics, and reports in one polished flow."
           </p>
           <strong>Final-year project evaluator</strong>
+        </article>
+        <article className="testimonial-card">
+          <p>
+            "The feedback cards made it clear exactly what I had to improve
+            before my next technical round."
+          </p>
+          <strong>Frontend internship candidate</strong>
         </article>
         <article className="faq-card">
           <h2>FAQ</h2>
@@ -134,7 +152,10 @@ const Landing = () => {
       </section>
 
       <section className="cta-band">
-        <h2>Ready to run a complete mock interview?</h2>
+        <div>
+          <p className="eyebrow">Ready To Land Your Dream Job?</p>
+          <h2>Start Practicing Today</h2>
+        </div>
         <Link className="btn btn-primary" to="/register">
           Create free account <FaArrowRight aria-hidden="true" />
         </Link>
