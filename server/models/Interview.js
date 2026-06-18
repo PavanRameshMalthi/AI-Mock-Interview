@@ -36,11 +36,17 @@ const interviewSchema = new mongoose.Schema(
       recommendations: [String],
     },
     resumeText: String,
+    deletedAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
   { timestamps: true }
 );
 
 interviewSchema.index({ user: 1, createdAt: -1 });
+interviewSchema.index({ user: 1, deletedAt: 1, createdAt: -1 });
 interviewSchema.index({ score: -1 });
 interviewSchema.index({ createdAt: -1 });
 

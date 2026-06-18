@@ -12,8 +12,10 @@ jest.mock("../models/User", () => ({
 jest.mock("../models/Interview", () => ({
   create: jest.fn(),
   find: jest.fn(),
+  findOneAndUpdate: jest.fn(),
   countDocuments: jest.fn(),
   distinct: jest.fn(),
+  updateMany: jest.fn(),
   deleteMany: jest.fn(),
 }));
 
@@ -253,7 +255,69 @@ describe("protected interview APIs", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.interviews).toHaveLength(1);
-    expect(Interview.find).toHaveBeenCalledWith({ user: "user-1" });
+    expect(Interview.find).toHaveBeenCalledWith({
+      user: "user-1",
+      deletedAt: null,
+    });
+  });
+
+  test("soft deletes an interview history item", async () => {
+    const interviewId = "507f1f77bcf86cd799439011";
+    const select = jest.fn().mockResolvedValue({
+      _id: interviewId,
+      role: "Frontend Developer",
+      deletedAt: new Date(),
+    });
+    Interview.findOneAndUpdate.mockReturnValue({ select });
+
+    const response = await request(app)
+      .delete(`/api/history/${interviewId}`)
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(200);
+    expect(Interview.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: interviewId, user: "user-1", deletedAt: null },
+      { deletedAt: expect.any(Date) },
+      { new: true }
+    );
+  });
+
+  test("bulk deletes selected interview history items", async () => {
+    const ids = ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"];
+    Interview.updateMany.mockResolvedValue({ modifiedCount: 2 });
+
+    const response = await request(app)
+      .patch("/api/history/bulk-delete")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({ interviewIds: ids });
+
+    expect(response.status).toBe(200);
+    expect(response.body.deletedCount).toBe(2);
+    expect(Interview.updateMany).toHaveBeenCalledWith(
+      { _id: { $in: ids }, user: "user-1", deletedAt: null },
+      { deletedAt: expect.any(Date) }
+    );
+  });
+
+  test("restores a deleted interview history item", async () => {
+    const interviewId = "507f1f77bcf86cd799439011";
+    const select = jest.fn().mockResolvedValue({
+      _id: interviewId,
+      role: "Frontend Developer",
+      deletedAt: null,
+    });
+    Interview.findOneAndUpdate.mockReturnValue({ select });
+
+    const response = await request(app)
+      .patch(`/api/history/${interviewId}/restore`)
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(200);
+    expect(Interview.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: interviewId, user: "user-1", deletedAt: { $ne: null } },
+      { deletedAt: null },
+      { new: true }
+    );
   });
 
   test("returns admin platform summary for admins", async () => {

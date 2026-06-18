@@ -6,7 +6,7 @@ import authService from "../../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "", rememberMe: true });
   const [loading, setLoading] = useState(false);
   const isValid = formData.email.trim() && formData.password;
 
@@ -22,9 +22,18 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(formData);
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      const credentials = {
+        email: formData.email,
+        password: formData.password,
+      };
+      const response = await authService.login(credentials);
+      const storage = formData.rememberMe ? localStorage : sessionStorage;
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      storage.setItem("token", response.token);
+      storage.setItem("user", JSON.stringify(response.user));
       showSuccess("Welcome back");
       navigate("/dashboard");
     } catch (error) {
@@ -65,6 +74,18 @@ const Login = () => {
             placeholder="Enter your password"
             value={formData.password}
           />
+
+          <label className="checkbox-row">
+            <input
+              checked={formData.rememberMe}
+              name="rememberMe"
+              onChange={(event) =>
+                setFormData({ ...formData, rememberMe: event.target.checked })
+              }
+              type="checkbox"
+            />
+            Remember me on this device
+          </label>
 
           <button className="btn btn-primary full-width" disabled={loading || !isValid}>
             {loading ? "Signing in..." : "Sign in"}

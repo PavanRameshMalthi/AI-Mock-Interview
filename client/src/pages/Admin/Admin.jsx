@@ -4,7 +4,9 @@ import { showError, showSuccess } from "../../components/UI/Toast";
 import adminService from "../../services/adminService";
 
 const Admin = () => {
-  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const currentUser = JSON.parse(
+    localStorage.getItem("user") || sessionStorage.getItem("user") || "null"
+  );
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(currentUser?.role === "admin");
 

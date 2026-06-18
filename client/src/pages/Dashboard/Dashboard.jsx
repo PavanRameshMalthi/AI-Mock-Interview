@@ -5,7 +5,9 @@ import dashboardService from "../../services/dashboardService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = JSON.parse(
+    localStorage.getItem("user") || sessionStorage.getItem("user") || "null"
+  );
   const [summary, setSummary] = useState({
     completed: 0,
     averageScore: 0,
@@ -30,6 +32,8 @@ const Dashboard = () => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     navigate("/login");
   };
 

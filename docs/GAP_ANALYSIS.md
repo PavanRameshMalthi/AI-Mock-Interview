@@ -40,7 +40,9 @@ This report compares the current codebase against `AI_Mock_Interview_Master_Code
 ## Advanced Features
 
 - Google OAuth, LinkedIn OAuth, and Firebase phone OTP need real provider SDK/callback implementation.
-- Admin dashboard needs UI and API endpoints.
+- Admin dashboard has UI and API endpoints; deeper charts, pagination, and CSV exports remain future upgrades.
+- V2 history management is implemented with soft delete, bulk delete, search, filters, restore, and undo.
+- Certificate generation is implemented client-side with `jsPDF`.
 - Test coverage is solid but below the requested 90% target in the README; provider auth/admin/PDF flows need more tests.
 - Deployment readiness needs an explicit guide and security checklist.
 

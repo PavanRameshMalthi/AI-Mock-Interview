@@ -98,6 +98,48 @@ const Results = () => {
     doc.save("Interview_Report.pdf");
   };
 
+  const downloadCertificate = async () => {
+    if (!result) return;
+
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ orientation: "landscape" });
+    const user = JSON.parse(
+      localStorage.getItem("user") || sessionStorage.getItem("user") || "null"
+    );
+    const config = JSON.parse(localStorage.getItem("interviewConfig") || "{}");
+    const score = Number(result.overall || 0);
+    const level = score >= 85 ? "Excellent" : score >= 70 ? "Strong" : "Completed";
+
+    doc.setDrawColor(61, 214, 189);
+    doc.setLineWidth(2);
+    doc.rect(12, 12, 273, 186);
+    doc.setFontSize(28);
+    doc.text("Certificate of Mock Interview Completion", 148, 48, {
+      align: "center",
+    });
+    doc.setFontSize(14);
+    doc.text("This certifies that", 148, 72, { align: "center" });
+    doc.setFontSize(24);
+    doc.text(user?.name || "Candidate", 148, 92, { align: "center" });
+    doc.setFontSize(14);
+    doc.text(
+      `completed a ${config.difficulty || "targeted"} ${config.role || "AI"} mock interview`,
+      148,
+      112,
+      { align: "center" }
+    );
+    doc.setFontSize(18);
+    doc.text(`${level} Performance - Score ${score}/100`, 148, 134, {
+      align: "center",
+    });
+    doc.setFontSize(11);
+    doc.text(`Issued on ${new Date().toLocaleDateString()}`, 148, 160, {
+      align: "center",
+    });
+    doc.text("AI Mock Interview Platform", 148, 178, { align: "center" });
+    doc.save("Interview_Certificate.pdf");
+  };
+
   if (loading) {
     return (
       <main className="app-shell narrow">
@@ -184,6 +226,9 @@ const Results = () => {
         <div className="button-row">
           <button className="btn btn-primary" onClick={downloadPDF}>
             Download PDF
+          </button>
+          <button className="btn btn-secondary" onClick={downloadCertificate}>
+            Download Certificate
           </button>
           <Link className="btn btn-secondary" to="/interview-setup">
             Practice again

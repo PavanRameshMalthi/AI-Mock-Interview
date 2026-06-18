@@ -13,6 +13,8 @@ AI Mock Interview is a full-stack MERN-style web application for practicing role
 - Voice interview support with question playback, microphone answers, and text fallback
 - AI evaluation with deterministic local fallback scoring and saved interview history
 - PDF scorecard export
+- Certificate generator for completed interviews
+- Searchable interview history with soft delete, bulk delete, restore, and undo
 - Admin dashboard for platform metrics, user management, and report export
 - Default dark mode UI
 - Responsive layouts for mobile, tablet, and desktop
@@ -295,12 +297,29 @@ The evaluation response includes technical, communication, problem-solving, over
 `GET /history`
 
 - Protected route
-- Returns the latest 25 saved interview evaluations for the current user.
+- Returns the latest saved interview evaluations for the current user.
+- Query parameters: `search`, `difficulty`, `status=active|deleted`.
 
 `GET /history/analytics`
 
 - Protected route
 - Returns interview trends, ATS trends, strong skill areas, weak skill areas, and summary metrics.
+
+`DELETE /history/:interviewId`
+
+- Soft deletes one interview from active history.
+
+`PATCH /history/bulk-delete`
+
+```json
+{
+  "interviewIds": ["507f1f77bcf86cd799439011"]
+}
+```
+
+`PATCH /history/:interviewId/restore`
+
+- Restores a soft-deleted interview.
 
 ### Admin
 
