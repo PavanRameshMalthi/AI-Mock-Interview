@@ -327,6 +327,23 @@ const History = () => {
               </div>
             </div>
 
+            {activeInterview.feedback?.improvementTracker ? (
+              <div className="career-grid">
+                <div>
+                  <h3>Mistakes made</h3>
+                  <p>{activeInterview.feedback.improvementTracker.mistakesMade?.join(" ") || "No repeated mistake pattern detected yet."}</p>
+                </div>
+                <div>
+                  <h3>Weak topics</h3>
+                  <p>{activeInterview.feedback.improvementTracker.weakTopics?.join(", ") || "Keep collecting interview data."}</p>
+                </div>
+                <div>
+                  <h3>Learning recommendations</h3>
+                  <p>{activeInterview.feedback.improvementTracker.learningRecommendations?.join(" ") || "Practice another role-specific round."}</p>
+                </div>
+              </div>
+            ) : null}
+
             <div className="qa-list">
               {(activeInterview.feedback?.questionScores || activeInterview.questions || []).map((item, index) => {
                 const question = item.question || activeInterview.questions?.[index];
@@ -340,6 +357,9 @@ const History = () => {
                     <p className="question-text">{question}</p>
                     <p className="muted"><strong>Your answer:</strong> {answer || "No answer recorded."}</p>
                     <p className="muted"><strong>Feedback:</strong> {item.feedback || "Review this answer for clarity and relevance."}</p>
+                    {item.whyItIsWrong ? (
+                      <p className="muted"><strong>Why it is wrong:</strong> {item.whyItIsWrong}</p>
+                    ) : null}
                     {item.correctAnswer ? (
                       <p className="muted"><strong>Expected answer:</strong> {item.correctAnswer}</p>
                     ) : null}

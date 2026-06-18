@@ -70,6 +70,10 @@ const enrichEvaluation = (evaluation) => {
       feedback: item.feedback,
       correctSignals: item.matchedKeywords || [],
       incorrectSignals: item.missingKeywords || [],
+      whyItIsWrong:
+        item.score < 70
+          ? item.feedback
+          : "No critical issue detected; the answer can still be improved with sharper detail.",
       correctAnswer: item.expectedAnswer,
       improvementSuggestion:
         item.score < 70

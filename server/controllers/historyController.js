@@ -65,7 +65,7 @@ const getHistoryItem = asyncHandler(async (req, res) => {
 
 const getAnalytics = asyncHandler(async (req, res) => {
   const [interviews, atsReports] = await Promise.all([
-    Interview.find({ user: req.user.id })
+    Interview.find({ user: req.user.id, deletedAt: null })
       .sort({ createdAt: 1 })
       .limit(100)
       .select("role difficulty score feedback atsScore createdAt"),
@@ -126,6 +126,28 @@ const getAnalytics = asyncHandler(async (req, res) => {
     averageScore: item.count ? Math.round(item.totalScore / item.count) : 0,
   }));
 
+  const weeklyMap = interviews.reduce((map, item) => {
+    const date = new Date(item.createdAt);
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay());
+    const key = weekStart.toISOString().slice(0, 10);
+    const current = map.get(key) || { week: key, count: 0, totalScore: 0 };
+    current.count += 1;
+    current.totalScore += item.score || 0;
+    map.set(key, current);
+    return map;
+  }, new Map());
+
+  const roleMap = interviews.reduce((map, item) => {
+    const key = item.role || "General";
+    const current = map.get(key) || { role: key, count: 0, totalScore: 0, bestScore: 0 };
+    current.count += 1;
+    current.totalScore += item.score || 0;
+    current.bestScore = Math.max(current.bestScore, item.score || 0);
+    map.set(key, current);
+    return map;
+  }, new Map());
+
   const dayKeys = new Set(
     interviews.map((item) => new Date(item.createdAt).toISOString().slice(0, 10))
   );
@@ -137,18 +159,31 @@ const getAnalytics = asyncHandler(async (req, res) => {
   }
 
   const skillGrowth = [
-    "react",
-    "javascript",
-    "node",
-    "express",
-    "mongodb",
-    "communication",
-    "problem solving",
-    "confidence",
-  ].map((skill) => ({
-    skill,
-    score: Math.min((keywordCounts.get(skill) || 0) * 20, 100),
-  }));
+    ["React", "react"],
+    ["JavaScript", "javascript"],
+    ["Node.js", "node"],
+    ["Express.js", "express"],
+    ["MongoDB", "mongodb"],
+    ["Communication", "communication"],
+    ["Problem Solving", "problemSolving"],
+    ["Confidence", "confidence"],
+  ].map(([label, key]) => {
+    const feedbackAverage = interviews.length
+      ? Math.round(
+          interviews.reduce((sum, item) => {
+            if (key === "communication") return sum + (item.feedback?.communication || 0);
+            if (key === "problemSolving") return sum + (item.feedback?.problemSolving || 0);
+            if (key === "confidence") return sum + (item.feedback?.confidence || 0);
+            return sum + Math.min((item.atsScore?.matchedKeywords || []).includes(key) ? 100 : 0, 100);
+          }, 0) / interviews.length
+        )
+      : 0;
+
+    return {
+      skill: label,
+      score: feedbackAverage || Math.min((keywordCounts.get(key) || 0) * 20, 100),
+    };
+  });
 
   res.json({
     success: true,
@@ -179,6 +214,17 @@ const getAnalytics = asyncHandler(async (req, res) => {
         score: item.score || 0,
       })),
       monthlyProgress,
+      weeklyProgress: [...weeklyMap.values()].map((item) => ({
+        week: item.week,
+        interviews: item.count,
+        averageScore: item.count ? Math.round(item.totalScore / item.count) : 0,
+      })),
+      roleBasedProgress: [...roleMap.values()].map((item) => ({
+        role: item.role,
+        interviews: item.count,
+        averageScore: item.count ? Math.round(item.totalScore / item.count) : 0,
+        bestScore: item.bestScore,
+      })),
     },
     skillGrowth,
     strongSkillAreas,

@@ -1,6 +1,6 @@
-# AI Mock Interview
+# AI Mock Interview Platform
 
-AI Mock Interview is a full-stack MERN-style web application for practicing role-specific interviews. Users can register, upload a PDF resume, generate AI-assisted interview questions, answer them in a guided session, receive an evaluation scorecard, export a PDF report, and review interview history.
+AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware mock interviews, AI feedback, ATS scoring, progress analytics, certificate generation, and portfolio-ready interview reports. It is designed for final-year major projects, college demonstrations, internship showcases, and recruiter portfolio walkthroughs.
 
 ## Features
 
@@ -16,7 +16,11 @@ AI Mock Interview is a full-stack MERN-style web application for practicing role
 - Certificate generator for completed interviews
 - Searchable interview history with soft delete, bulk delete, restore, and undo
 - Admin dashboard for platform metrics, user management, and report export
-- Default dark mode UI
+- Analytics dashboard with weekly, monthly, role-based, and skill-based progress
+- Deep interview history view with questions, answers, feedback, strengths, weaknesses, and learning recommendations
+- Recycle-bin history management with search, filter, sort, bulk delete, restore, undo, confirmation modal, and toast notifications
+- Results redesign with score meter, score bars, badges, question-level feedback, PDF report export, and certificate export
+- Light, dark, and system theme modes
 - Responsive layouts for mobile, tablet, and desktop
 - Security middleware: Helmet, CORS allowlist, rate limiting, upload size/type limits
 
@@ -66,7 +70,33 @@ AI Mock Interview/
     server.js
     package.json
   postman/
+  dashboard-report.md
+  analytics-report.md
+  feedback-system-report.md
+  security-report.md
+  performance-report.md
+  test-report.md
+  uiux-report.md
   README.md
+```
+
+## Architecture
+
+```text
+React + Vite Client
+  -> Axios API services
+  -> Protected React Router pages
+  -> Results, history, dashboard, admin, and export UI
+
+Express API Server
+  -> Auth, resume, interview, evaluation, history, and admin routes
+  -> Validation, sanitization, rate limiting, auth, and error middleware
+  -> Gemini integration with deterministic fallback engines
+
+MongoDB
+  -> Users
+  -> Interviews with enriched feedback and soft delete
+  -> ATS reports for resume analytics
 ```
 
 ## Installation
@@ -298,12 +328,17 @@ The evaluation response includes technical, communication, problem-solving, over
 
 - Protected route
 - Returns the latest saved interview evaluations for the current user.
-- Query parameters: `search`, `difficulty`, `status=active|deleted`.
+- Query parameters: `search`, `difficulty`, `status=active|deleted`, `sort=newest|oldest|score-high|score-low`.
 
 `GET /history/analytics`
 
 - Protected route
-- Returns interview trends, ATS trends, strong skill areas, weak skill areas, and summary metrics.
+- Returns summary metrics, interview trends, ATS trends, weekly progress, monthly progress, role-based progress, skill growth, strong skill areas, and weak skill areas.
+
+`GET /history/:interviewId`
+
+- Protected route
+- Returns a deep interview view with questions, answers, scores, feedback, ATS snapshot, and improvement tracker.
 
 `DELETE /history/:interviewId`
 
@@ -339,7 +374,7 @@ Admin routes require a JWT for a user with `role: "admin"`.
 
 ## Screenshots
 
-Add screenshots after deployment:
+Recommended screenshots for the GitHub repository:
 
 - Landing page
 - Dashboard
@@ -392,13 +427,11 @@ For production, provide real secrets through your environment manager instead of
 
 ## Future Enhancements
 
-- Speech-to-text answer capture
-- Text-to-speech interviewer
 - Webcam mock interview recording
-- Admin dashboard
-- Role-based access control
-- Performance charts and progress trends
-- Search, filter, sort, and pagination for history
+- Payment/subscription tiers
+- Public certificate verification page
+- Advanced radar charts with a dedicated charting library
+- Pagination for large interview history collections
 - CI/CD pipeline
 
 ## Contributing

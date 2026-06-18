@@ -170,6 +170,43 @@ const Dashboard = () => {
         </article>
 
         <article className="panel">
+          <h2>Weekly progress</h2>
+          {analytics?.trends?.weeklyProgress?.length ? (
+            <div className="mini-chart progress-chart">
+              {analytics.trends.weeklyProgress.slice(-8).map((item) => (
+                <span
+                  aria-label={`${item.week} ${item.averageScore}%`}
+                  key={item.week}
+                  style={{ height: `${Math.max(item.averageScore, 6)}%` }}
+                  title={`${item.week}: ${item.averageScore}%`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <h2>Role-based progress</h2>
+          {analytics?.trends?.roleBasedProgress?.length ? (
+            <div className="skill-growth">
+              {analytics.trends.roleBasedProgress.slice(0, 6).map((item) => (
+                <div className="score-row" key={item.role}>
+                  <span>{item.role}</span>
+                  <div className="meter">
+                    <span style={{ width: `${Math.max(item.averageScore, 4)}%` }} />
+                  </div>
+                  <strong>{item.averageScore}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-state">No data available.</p>
+          )}
+        </article>
+
+        <article className="panel">
           <h2>Interview score trend</h2>
           {analytics?.trends?.interviewScores?.length ? (
             <div className="mini-chart">

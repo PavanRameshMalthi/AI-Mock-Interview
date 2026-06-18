@@ -35,11 +35,18 @@ const interviewSchema = new mongoose.Schema(
           feedback: String,
           correctSignals: [String],
           incorrectSignals: [String],
+          whyItIsWrong: String,
           correctAnswer: String,
           improvementSuggestion: String,
           studyTopics: [String],
         },
       ],
+      improvementTracker: {
+        mistakesMade: [String],
+        weakTopics: [String],
+        learningRecommendations: [String],
+        areasToImprove: [String],
+      },
     },
     atsScore: {
       score: Number,

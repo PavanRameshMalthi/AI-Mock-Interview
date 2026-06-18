@@ -278,6 +278,7 @@ const Results = () => {
                 <p className="muted"><strong>Your answer:</strong> {item.answer || "No answer recorded."}</p>
                 <p className="muted"><strong>What was correct:</strong> {item.correctSignals?.join(", ") || "Add clearer correct signals next time."}</p>
                 <p className="muted"><strong>What was missing:</strong> {item.incorrectSignals?.join(", ") || "No major missing keywords detected."}</p>
+                <p className="muted"><strong>Why it is wrong:</strong> {item.whyItIsWrong || item.feedback}</p>
                 <p className="muted"><strong>Correct answer:</strong> {item.correctAnswer}</p>
                 <p className="muted"><strong>Improve:</strong> {item.improvementSuggestion}</p>
               </article>
