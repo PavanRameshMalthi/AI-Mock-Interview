@@ -935,6 +935,38 @@ summary {
   background: #0c121d;
 }
 
+.question-subscores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.subscore-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.subscore-badge span {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.subscore-badge strong {
+  font-size: 1.15rem;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
 .keyword-grid h3 {
   margin: 0 0 8px;
   font-size: 1rem;

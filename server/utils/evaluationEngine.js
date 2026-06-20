@@ -5,6 +5,22 @@ const LOW_QUALITY_PATTERNS = [
   /(.)\1{7,}/,
 ];
 
+const HARMFUL_PATTERNS = [
+  /don't worry|not important|doesn't matter|skip|ignore|avoid|never use/i,
+  /shouldn't|shouldn't be|bad practice|wrong way/i,
+];
+
+const CORRECTNESS_INDICATORS = {
+  strong: ["correct", "accurate", "properly", "well-designed", "best practice", "standard", "industry"],
+  weak: ["wrong", "incorrect", "bad practice", "avoid", "never", "don't", "not recommended"],
+};
+
+const COMMUNICATION_INDICATORS = {
+  excellent: ["first", "second", "third", "for example", "specifically", "in summary", "therefore", "because"],
+  good: ["example", "result", "impact", "benefit", "advantage"],
+  poor: ["vague", "unclear", "confusing"],
+};
+
 const QUESTION_BANK = {
   frontend: {
     expectedAnswer:
@@ -74,12 +90,54 @@ const getAnswerQualityFlag = (answer) => {
   if (!normalized) return "empty";
   if (normalized.length < 8 || words.length < 2) return "empty";
   if (LOW_QUALITY_PATTERNS.some((pattern) => pattern.test(answer))) return "random";
+  if (HARMFUL_PATTERNS.some((pattern) => pattern.test(answer))) return "harmful";
 
   const uniqueWords = new Set(words);
   if (words.length >= 8 && uniqueWords.size / words.length < 0.35) return "random";
   if (normalized.length > 40 && !/[aeiou]/i.test(normalized)) return "random";
 
   return "valid";
+};
+
+const buildQuestionFeedback = (score, matchedKeywords, missingKeywords, qualityFlag, correctness, relevance, technicalAccuracy) => {
+  if (qualityFlag === "empty") return "No usable answer was provided, so this question receives minimal credit.";
+  if (qualityFlag === "random") return "The answer appears unrelated or low quality. Restate the concept and support it with a concrete example.";
+  if (score < 40) return `The answer does not address the expected concept strongly enough. Add: ${missingKeywords.join(", ") || "role-specific details"}.`;
+  if (score < 70) return `Partial answer. Good signals: ${matchedKeywords.join(", ") || "some relevance"}. Add more depth around ${missingKeywords.join(", ") || "tradeoffs and examples"}.`;
+  if (score < 90) return "Mostly correct. Make it stronger with sharper examples, measurable impact, and explicit tradeoffs.";
+  return "Excellent answer with strong relevance, completeness, and keyword coverage.";
+};
+
+const calculateCorrectness = (normalizedAnswer, keywords, matchedKeywords) => {
+  if (matchedKeywords.length === 0) return 0;
+  return Math.round((matchedKeywords.length / keywords.length) * 100);
+};
+
+const calculateRelevance = (answer, questionTokens, answerTokens, normalizedAnswer) => {
+  if (questionTokens.length === 0 || answerTokens.length === 0) return 0;
+  const relevanceHits = questionTokens.filter((token) => answerTokens.has(token)).length;
+  const relevanceScore = (relevanceHits / Math.max(questionTokens.length, 1)) * 100;
+  const topicAligned = /\b(explain|describe|discuss|detail|implement|design|build|architecture|approach)\b/i.test(answer) ? 10 : 0;
+  return Math.min(relevanceScore + topicAligned, 100);
+};
+
+const calculateTechnicalAccuracy = (normalizedAnswer, expectedTokens, answerTokens, keywords, matchedKeywords) => {
+  if (expectedTokens.size === 0) return 50;
+  const overlap = [...expectedTokens].filter((token) => answerTokens.has(token)).length;
+  const accuracyHits = overlap / Math.max(expectedTokens.size * 0.3, 1);
+  const keywordCoverage = (matchedKeywords.length / Math.max(keywords.length, 1)) * 100;
+  const depthBonus = normalizedAnswer.split(" ").length > 50 ? 10 : 0;
+  return Math.min(Math.round(accuracyHits * 50 + (keywordCoverage * 0.5) + depthBonus), 100);
+};
+
+const calculateCommunicationScore = (answer, normalizedAnswer) => {
+  const answerTokens = tokenize(answer);
+  const wordCount = answerTokens.length;
+  const wordCountScore = Math.min((wordCount / 40) * 30, 30);
+  const hasStructure = /\b(first|second|third|finally|therefore|thus|because|specifically)\b/i.test(answer) ? 25 : 0;
+  const hasPunctuation = /[.!?]/.test(String(answer)) ? 15 : 0;
+  const hasExample = /\b(example|for instance|e\.g|case|project|built|implemented|deployed)\b/i.test(String(answer)) ? 30 : 0;
+  return Math.round(Math.min(wordCountScore + hasStructure + hasPunctuation + hasExample, 100));
 };
 
 const scoreQuestion = ({ questionInput, answer, role, difficulty }) => {
@@ -91,57 +149,75 @@ const scoreQuestion = ({ questionInput, answer, role, difficulty }) => {
   const keywords = unique(metadata.keywords.map((keyword) => normalizeText(keyword)));
   const matchedKeywords = keywords.filter((keyword) => normalizedAnswer.includes(keyword));
   const questionTokens = tokenize(metadata.question, 4);
-  const overlap = [...expectedTokens].filter((token) => answerTokens.has(token)).length;
-  const relevanceHits = questionTokens.filter((token) => answerTokens.has(token)).length;
+  
+  // Calculate new score categories
+  const correctnessScore = calculateCorrectness(normalizedAnswer, keywords, matchedKeywords);
+  const relevanceScore = calculateRelevance(answer, questionTokens, answerTokens, normalizedAnswer);
+  const technicalAccuracyScore = calculateTechnicalAccuracy(normalizedAnswer, expectedTokens, answerTokens, keywords, matchedKeywords);
+  const communicationScore = calculateCommunicationScore(answer, normalizedAnswer);
+  
+  // Comprehensive score: weighted average of 4 categories
+  let rawScore = 
+    correctnessScore * 0.3 +
+    relevanceScore * 0.25 +
+    technicalAccuracyScore * 0.25 +
+    communicationScore * 0.2;
 
-  const keywordScore = keywords.length
-    ? (matchedKeywords.length / keywords.length) * 100
-    : 50;
-  const accuracyScore = expectedTokens.size
-    ? Math.min((overlap / Math.max(expectedTokens.size * 0.28, 1)) * 100, 100)
-    : keywordScore;
-  const completenessScore = clampScore(
-    Math.min(tokenize(answer).length / 55, 1) * 70 +
-      (/[.!?]/.test(String(answer)) ? 10 : 0) +
-      (/\b(example|because|tradeoff|result|impact|metric|tested|built|improved)\b/i.test(String(answer)) ? 20 : 0)
-  );
+  // Identify what was correct/incorrect
+  const whatWasCorrect = matchedKeywords.slice(0, 5);
+  const whatWasIncorrect = keywords
+    .filter((keyword) => !matchedKeywords.includes(keyword))
+    .slice(0, 5);
 
-  let rawScore = accuracyScore * 0.7 + keywordScore * 0.2 + completenessScore * 0.1;
+  // Determine if irrelevant
+  const isIrrelevantAnswer = qualityFlag === "random" || qualityFlag === "harmful" || (relevanceScore < 15 && correctnessScore < 15);
 
-  if (qualityFlag === "empty") rawScore = Math.min(rawScore, 10);
-  if (qualityFlag === "random") rawScore = Math.min(rawScore, 25);
-  if (qualityFlag === "valid" && relevanceHits === 0 && matchedKeywords.length === 0) {
+  // Apply strict quality penalties and scoring bands
+  const numMatched = matchedKeywords.length;
+  
+  if (qualityFlag === "empty") {
+    rawScore = 0;
+  } else if (qualityFlag === "random") {
+    rawScore = Math.min(rawScore, 15);
+  } else if (qualityFlag === "harmful") {
+    rawScore = Math.min(rawScore, 20);
+  } else if (isIrrelevantAnswer) {
+    rawScore = Math.min(rawScore, 25);
+  } else if (numMatched <= 1 || (correctnessScore < 25 && relevanceScore < 25)) {
+    // Wrong Answer -> Low Score (0-35)
     rawScore = Math.min(rawScore, 35);
-  }
-  if (qualityFlag === "valid" && rawScore > 35 && rawScore < 40) {
-    rawScore = 40;
+  } else if (numMatched >= 4 && correctnessScore >= 65 && relevanceScore >= 40) {
+    // Correct Answer -> High Score (71-100)
+    rawScore = Math.max(rawScore, 75);
+  } else {
+    // Partial Answer -> Medium Score (40-70)
+    rawScore = Math.min(Math.max(rawScore, 40), 69);
   }
 
   const score = clampScore(rawScore);
   const missingKeywords = keywords.filter((keyword) => !matchedKeywords.includes(keyword)).slice(0, 6);
 
+  // Generate detailed feedback
+  const improvementSuggestion = generateImprovementSuggestion(score, missingKeywords, whatWasIncorrect, metadata);
+
   return {
     ...metadata,
     answer: String(answer || ""),
     score,
-    accuracyScore: clampScore(accuracyScore),
-    keywordScore: clampScore(keywordScore),
-    completenessScore,
+    correctnessScore: clampScore(correctnessScore),
+    relevanceScore: clampScore(relevanceScore),
+    technicalAccuracyScore: clampScore(technicalAccuracyScore),
+    communicationScore: clampScore(communicationScore),
     matchedKeywords,
     missingKeywords,
+    whatWasCorrect,
+    whatWasIncorrect,
+    correctAnswer: metadata.expectedAnswer,
     isEmpty: qualityFlag === "empty",
-    isIrrelevant: qualityFlag === "random" || (relevanceHits === 0 && matchedKeywords.length === 0),
-    feedback: buildQuestionFeedback(score, matchedKeywords, missingKeywords, qualityFlag),
+    isIrrelevant: isIrrelevantAnswer,
+    feedback: buildQuestionFeedback(score, matchedKeywords, missingKeywords, qualityFlag, correctnessScore, relevanceScore, technicalAccuracyScore),
+    improvementSuggestion,
   };
-};
-
-const buildQuestionFeedback = (score, matchedKeywords, missingKeywords, qualityFlag) => {
-  if (qualityFlag === "empty") return "No usable answer was provided, so this question receives minimal credit.";
-  if (qualityFlag === "random") return "The answer appears unrelated or low quality. Restate the concept and support it with a concrete example.";
-  if (score < 40) return `The answer does not address the expected concept strongly enough. Add: ${missingKeywords.join(", ") || "role-specific details"}.`;
-  if (score < 70) return `Partial answer. Good signals: ${matchedKeywords.join(", ") || "some relevance"}. Add more depth around ${missingKeywords.join(", ") || "tradeoffs and examples"}.`;
-  if (score < 90) return "Mostly correct. Make it stronger with sharper examples, measurable impact, and explicit tradeoffs.";
-  return "Excellent answer with strong relevance, completeness, and keyword coverage.";
 };
 
 const evaluateAnswers = ({ role, questions, answers, difficulty = "Intermediate" }) => {
@@ -159,9 +235,10 @@ const evaluateAnswers = ({ role, questions, answers, difficulty = "Intermediate"
       ? clampScore(questionScores.reduce((sum, item) => sum + selector(item), 0) / questionScores.length)
       : 0;
 
-  const technical = average((item) => item.accuracyScore * 0.75 + item.keywordScore * 0.25);
-  const communication = average((item) => item.completenessScore);
-  const problemSolving = average((item) => item.score);
+  // Calculate scores using new categories
+  const technical = average((item) => item.technicalAccuracyScore);
+  const communication = average((item) => item.communicationScore);
+  const problemSolving = average((item) => item.correctnessScore);
   const overall = average((item) => item.score);
   const weakQuestions = questionScores.filter((item) => item.score < 70).slice(0, 2);
 
@@ -173,6 +250,23 @@ const evaluateAnswers = ({ role, questions, answers, difficulty = "Intermediate"
     feedback: buildOverallFeedback(overall, weakQuestions),
     questionScores,
   };
+};
+
+const generateImprovementSuggestion = (score, missingKeywords, whatWasIncorrect, metadata) => {
+  if (score >= 85) {
+    return "Excellent! To reach mastery, add specific metrics or business impact measurements to your answer.";
+  }
+  if (score >= 70) {
+    return `Good foundation. Strengthen by covering: ${missingKeywords.slice(0, 2).join(", ")}. Add a concrete project example.`;
+  }
+  if (score >= 40) {
+    const topicsToAdd = missingKeywords.slice(0, 3).join(", ");
+    return `Partial answer. You need to add more about: ${topicsToAdd}. Structure: concept → implementation → tradeoffs → impact.`;
+  }
+  if (score > 0) {
+    return `The answer does not directly address the question. Start over with: "${metadata.question}". Review: ${missingKeywords.join(", ") || "core concepts"}.`;
+  }
+  return "No answer provided. Please provide a substantive response addressing all aspects of the question.";
 };
 
 const buildOverallFeedback = (overall, weakQuestions) => {

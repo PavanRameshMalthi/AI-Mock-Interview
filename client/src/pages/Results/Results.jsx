@@ -278,13 +278,33 @@ const Results = () => {
                   <h3>Question {index + 1}</h3>
                   <strong>{item.score}%</strong>
                 </div>
+
+                <div className="question-subscores">
+                  <div className="subscore-badge">
+                    <span>Correctness</span>
+                    <strong>{item.correctnessScore ?? 0}%</strong>
+                  </div>
+                  <div className="subscore-badge">
+                    <span>Relevance</span>
+                    <strong>{item.relevanceScore ?? 0}%</strong>
+                  </div>
+                  <div className="subscore-badge">
+                    <span>Technical Accuracy</span>
+                    <strong>{item.technicalAccuracyScore ?? 0}%</strong>
+                  </div>
+                  <div className="subscore-badge">
+                    <span>Communication</span>
+                    <strong>{item.communicationScore ?? 0}%</strong>
+                  </div>
+                </div>
+
                 <p className="question-text">{item.question}</p>
                 <p className="muted"><strong>Your answer:</strong> {item.answer || "No answer recorded."}</p>
-                <p className="muted"><strong>What was correct:</strong> {item.correctSignals?.join(", ") || "Add clearer correct signals next time."}</p>
-                <p className="muted"><strong>What was missing:</strong> {item.incorrectSignals?.join(", ") || "No major missing keywords detected."}</p>
+                <p className="muted"><strong>What was correct:</strong> {item.whatWasCorrect?.join(", ") || "No correct keywords identified."}</p>
+                <p className="muted"><strong>What was incorrect:</strong> {item.whatWasIncorrect?.join(", ") || "No critical gaps identified."}</p>
                 <p className="muted"><strong>Why it is wrong:</strong> {item.whyItIsWrong || item.feedback}</p>
                 <p className="muted"><strong>Correct answer:</strong> {item.correctAnswer}</p>
-                <p className="muted"><strong>Improve:</strong> {item.improvementSuggestion}</p>
+                <p className="muted"><strong>Improvement Suggestions:</strong> {item.improvementSuggestion}</p>
               </article>
             ))}
           </div>

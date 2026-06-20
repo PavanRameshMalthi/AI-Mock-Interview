@@ -354,15 +354,33 @@ const History = () => {
                       <h3>Question {index + 1}</h3>
                       <strong>{item.score ?? "N/A"}%</strong>
                     </div>
+
+                    <div className="question-subscores">
+                      <div className="subscore-badge">
+                        <span>Correctness</span>
+                        <strong>{item.correctnessScore ?? 0}%</strong>
+                      </div>
+                      <div className="subscore-badge">
+                        <span>Relevance</span>
+                        <strong>{item.relevanceScore ?? 0}%</strong>
+                      </div>
+                      <div className="subscore-badge">
+                        <span>Technical Accuracy</span>
+                        <strong>{item.technicalAccuracyScore ?? 0}%</strong>
+                      </div>
+                      <div className="subscore-badge">
+                        <span>Communication</span>
+                        <strong>{item.communicationScore ?? 0}%</strong>
+                      </div>
+                    </div>
+
                     <p className="question-text">{question}</p>
                     <p className="muted"><strong>Your answer:</strong> {answer || "No answer recorded."}</p>
-                    <p className="muted"><strong>Feedback:</strong> {item.feedback || "Review this answer for clarity and relevance."}</p>
-                    {item.whyItIsWrong ? (
-                      <p className="muted"><strong>Why it is wrong:</strong> {item.whyItIsWrong}</p>
-                    ) : null}
-                    {item.correctAnswer ? (
-                      <p className="muted"><strong>Expected answer:</strong> {item.correctAnswer}</p>
-                    ) : null}
+                    <p className="muted"><strong>What was correct:</strong> {item.whatWasCorrect?.join(", ") || "No correct keywords identified."}</p>
+                    <p className="muted"><strong>What was incorrect:</strong> {item.whatWasIncorrect?.join(", ") || "No critical gaps identified."}</p>
+                    <p className="muted"><strong>Why it is wrong:</strong> {item.whyItIsWrong || item.feedback}</p>
+                    <p className="muted"><strong>Correct answer:</strong> {item.correctAnswer}</p>
+                    <p className="muted"><strong>Improvement Suggestions:</strong> {item.improvementSuggestion}</p>
                   </article>
                 );
               })}
