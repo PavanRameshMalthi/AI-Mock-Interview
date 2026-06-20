@@ -125,6 +125,7 @@ textarea {
   background: transparent;
   color: var(--muted);
   cursor: pointer;
+  transform: translateY(-50%);
 }
 
 .icon-button:focus-visible {
@@ -138,6 +139,24 @@ textarea {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
+}
+
+.auth-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.recovery-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
 }
 
 .checkbox-row {
@@ -949,6 +968,14 @@ th {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #0c121d;
+}
+
+.chart-canvas {
+  height: 220px;
+}
+
+.chart-canvas.hidden {
+  display: none;
 }
 
 .mini-chart span {

@@ -1,6 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
+
+jest.mock("../services/authService", () => ({
+  refreshSession: jest.fn(() => Promise.reject(new Error("No session"))),
+}));
 
 const renderProtectedRoute = () =>
   render(
@@ -23,9 +27,11 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-test("redirects anonymous users to login", () => {
+test("redirects anonymous users to login", async () => {
   renderProtectedRoute();
-  expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+  });
 });
 
 test("renders protected content for authenticated users", () => {

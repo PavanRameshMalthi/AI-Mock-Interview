@@ -18,7 +18,30 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config || {};
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh") &&
+      !originalRequest.url?.includes("/auth/login")
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshResponse = await api.post("/auth/refresh");
+        const storage = localStorage.getItem("user") ? localStorage : sessionStorage;
+        storage.setItem("token", refreshResponse.data.token);
+        storage.setItem("user", JSON.stringify(refreshResponse.data.user));
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
+        return api(originalRequest);
+      } catch {
+        // Fall through to clear stale local auth state.
+      }
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");

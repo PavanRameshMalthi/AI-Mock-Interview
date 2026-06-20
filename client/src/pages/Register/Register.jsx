@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaGoogle, FaLinkedin, FaPhoneAlt } from "react-icons/fa";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField, { PasswordStrength } from "../../components/UI/PasswordField";
 import { getPasswordChecks } from "../../utils/passwordUtils";
@@ -13,7 +14,10 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
+    otp: "123456",
   });
+  const [providerLoading, setProviderLoading] = useState("");
 
   const checks = getPasswordChecks(formData.password);
   const passwordReady = Object.values(checks).every(Boolean);
@@ -65,8 +69,54 @@ const Register = () => {
     }
   };
 
-  const showProviderSetup = () => {
-    showError("This sign-up provider needs production credentials first");
+  const storeSession = (response) => {
+    localStorage.setItem("token", response.token);
+    localStorage.setItem("user", JSON.stringify(response.user));
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+  };
+
+  const handleProviderSignup = async (provider) => {
+    setProviderLoading(provider);
+
+    try {
+      let response;
+      const email = formData.email.trim().toLowerCase();
+      const name = formData.name.trim() || (email ? email.split("@")[0] : "Demo Candidate");
+
+      if (provider === "google") {
+        response = await authService.googleLogin({
+          email: email || "google.demo@example.com",
+          name,
+          googleId: `google:${email || "demo"}`,
+        });
+      }
+
+      if (provider === "linkedin") {
+        response = await authService.linkedinLogin({
+          email: email || "linkedin.demo@example.com",
+          name,
+          linkedinId: `linkedin:${email || "demo"}`,
+          headline: "Interview candidate",
+        });
+      }
+
+      if (provider === "phone") {
+        response = await authService.phoneLogin({
+          phone: formData.phone,
+          otp: formData.otp,
+          name,
+        });
+      }
+
+      storeSession(response);
+      showSuccess("Account ready");
+      navigate("/dashboard");
+    } catch (error) {
+      showError(error.response?.data?.message || "Provider sign-up failed");
+    } finally {
+      setProviderLoading("");
+    }
   };
 
   return (
@@ -124,20 +174,60 @@ const Register = () => {
             password={formData.password}
           />
 
+          <div className="form-row">
+            <label>
+              Phone
+              <input
+                autoComplete="tel"
+                name="phone"
+                onChange={handleChange}
+                placeholder="+91 98765 43210"
+                type="tel"
+                value={formData.phone}
+              />
+            </label>
+            <label>
+              OTP
+              <input
+                inputMode="numeric"
+                name="otp"
+                onChange={handleChange}
+                placeholder="123456"
+                type="text"
+                value={formData.otp}
+              />
+            </label>
+          </div>
+
           <button className="btn btn-primary full-width" disabled={!canSubmit}>
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
         <div className="auth-providers" aria-label="Alternative sign up options">
-          <button className="btn btn-secondary full-width" onClick={showProviderSetup} type="button">
-            Sign up with Google
+          <button
+            className="btn btn-secondary full-width"
+            disabled={Boolean(providerLoading)}
+            onClick={() => handleProviderSignup("google")}
+            type="button"
+          >
+            <FaGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Sign up with Google"}
           </button>
-          <button className="btn btn-secondary full-width" onClick={showProviderSetup} type="button">
-            Sign up with LinkedIn
+          <button
+            className="btn btn-secondary full-width"
+            disabled={Boolean(providerLoading)}
+            onClick={() => handleProviderSignup("linkedin")}
+            type="button"
+          >
+            <FaLinkedin aria-hidden="true" /> {providerLoading === "linkedin" ? "Connecting..." : "Sign up with LinkedIn"}
           </button>
-          <button className="btn btn-secondary full-width" onClick={showProviderSetup} type="button">
-            Sign up with Phone Number
+          <button
+            className="btn btn-secondary full-width"
+            disabled={Boolean(providerLoading) || !formData.phone.trim()}
+            onClick={() => handleProviderSignup("phone")}
+            type="button"
+          >
+            <FaPhoneAlt aria-hidden="true" /> {providerLoading === "phone" ? "Verifying..." : "Sign up with Phone"}
           </button>
         </div>
 

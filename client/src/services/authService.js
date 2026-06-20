@@ -18,7 +18,49 @@ const register = async (data) => {
   return response.data;
 };
 
+const refreshSession = async () => {
+  const response = await api.post("/auth/refresh");
+  return response.data;
+};
+
+const logout = async () => {
+  const response = await api.post("/auth/logout");
+  return response.data;
+};
+
+const forgotPassword = async (data) => {
+  const response = await api.post("/auth/forgot-password", data);
+  return response.data;
+};
+
+const resetPassword = async (data) => {
+  const response = await api.post("/auth/reset-password", data);
+  return response.data;
+};
+
+const googleLogin = async (data) => {
+  const response = await api.post("/auth/google", data);
+  return response.data;
+};
+
+const linkedinLogin = async (data) => {
+  const response = await api.post("/auth/linkedin", data);
+  return response.data;
+};
+
+const phoneLogin = async (data) => {
+  const response = await api.post("/auth/phone", data);
+  return response.data;
+};
+
 export default {
   login,
   register,
+  refreshSession,
+  logout,
+  forgotPassword,
+  resetPassword,
+  googleLogin,
+  linkedinLogin,
+  phoneLogin,
 };

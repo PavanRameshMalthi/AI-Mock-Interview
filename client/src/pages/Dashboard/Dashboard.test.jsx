@@ -8,6 +8,10 @@ jest.mock("../../services/dashboardService", () => ({
   getAnalytics: jest.fn(),
 }));
 
+jest.mock("../../services/authService", () => ({
+  logout: jest.fn(() => Promise.resolve({ success: true })),
+}));
+
 test("renders dashboard summary and actions", async () => {
   localStorage.setItem(
     "user",

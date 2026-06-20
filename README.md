@@ -4,7 +4,8 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 
 ## Features
 
-- JWT-based registration and login
+- JWT-based registration, login, logout, refresh sessions, forgot password, and reset password
+- Demo-ready Google, LinkedIn, and phone login endpoints for final project walkthroughs
 - Protected dashboard and interview workflows
 - PDF resume upload with server-side file validation
 - ATS resume fit scoring with keyword, section, impact, and role-alignment checks
@@ -16,7 +17,7 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 - Certificate generator for completed interviews
 - Searchable interview history with soft delete, bulk delete, restore, and undo
 - Admin dashboard for platform metrics, user management, and report export
-- Analytics dashboard with weekly, monthly, role-based, and skill-based progress
+- Chart.js analytics dashboard with score trends, monthly progress, and skill growth
 - Deep interview history view with questions, answers, feedback, strengths, weaknesses, and learning recommendations
 - Recycle-bin history management with search, filter, sort, bulk delete, restore, undo, confirmation modal, and toast notifications
 - Results redesign with score meter, score bars, badges, question-level feedback, PDF report export, and certificate export
@@ -31,6 +32,7 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 - Vite
 - React Router
 - Axios
+- Chart.js
 - React Hot Toast
 - React Icons
 - jsPDF
@@ -198,8 +200,8 @@ npm test
 
 Current verified coverage:
 
-- Frontend statements: 82%+
-- Backend statements: 84%+
+- Frontend statements: 51.44%
+- Backend statements: 65.58%
 
 Run lint:
 
@@ -224,7 +226,7 @@ http://localhost:5000/api
 {
   "name": "Alex Morgan",
   "email": "alex@example.com",
-  "password": "Password123"
+  "password": "Password123!"
 }
 ```
 
@@ -233,9 +235,71 @@ http://localhost:5000/api
 ```json
 {
   "email": "alex@example.com",
-  "password": "Password123"
+  "password": "Password123!"
 }
 ```
+
+`POST /auth/refresh`
+
+- Uses the secure refresh-token cookie to issue a new access token.
+- The client route guard calls this automatically so sessions persist after refresh.
+
+`POST /auth/logout`
+
+- Protected route
+- Clears the stored refresh token and cookie.
+
+`POST /auth/forgot-password`
+
+```json
+{
+  "email": "alex@example.com"
+}
+```
+
+- In development, the response includes a reset token for easy local testing.
+
+`POST /auth/reset-password`
+
+```json
+{
+  "token": "password-reset-token",
+  "password": "NewPassword123!"
+}
+```
+
+`POST /auth/google`
+
+```json
+{
+  "email": "alex@example.com",
+  "name": "Alex Morgan",
+  "googleId": "google-profile-id"
+}
+```
+
+`POST /auth/linkedin`
+
+```json
+{
+  "email": "alex@example.com",
+  "name": "Alex Morgan",
+  "linkedinId": "linkedin-profile-id",
+  "headline": "Frontend Developer"
+}
+```
+
+`POST /auth/phone`
+
+```json
+{
+  "phone": "+919876543210",
+  "otp": "123456",
+  "name": "Alex Morgan"
+}
+```
+
+Google and LinkedIn currently use trusted profile payloads suitable for demo/local submission builds. For production, connect these endpoints to real OAuth callbacks and provider token verification. Phone login uses `123456` as the development OTP and should be connected to an SMS OTP provider before production use.
 
 `POST /auth/verify-email`
 
@@ -377,11 +441,13 @@ Admin routes require a JWT for a user with `role: "admin"`.
 Recommended screenshots for the GitHub repository:
 
 - Landing page
+- Login, signup, forgot password, and reset password
 - Dashboard
 - Resume upload
 - Interview setup
 - Interview session
 - Results page
+- History and certificate pages
 
 ## Deployment Guide
 
@@ -430,7 +496,9 @@ For production, provide real secrets through your environment manager instead of
 - Webcam mock interview recording
 - Payment/subscription tiers
 - Public certificate verification page
-- Advanced radar charts with a dedicated charting library
+- Real Google OAuth token verification and LinkedIn OAuth callback handling
+- SMS provider integration for production phone OTP delivery
+- Advanced radar charts and cohort analytics
 - Pagination for large interview history collections
 - CI/CD pipeline
 

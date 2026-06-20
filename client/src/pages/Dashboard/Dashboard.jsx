@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaChartLine, FaFileUpload, FaHistory, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
+import ChartPanel from "../../components/UI/ChartPanel";
 import dashboardService from "../../services/dashboardService";
+import authService from "../../services/authService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -29,7 +31,12 @@ const Dashboard = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // Local session cleanup still signs the user out if the API is unavailable.
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.removeItem("token");
@@ -55,7 +62,7 @@ const Dashboard = () => {
 
       <section className="stats-grid">
         <article className="stat-card">
-          <span>Completed interviews</span>
+          <span>Total interviews</span>
           <strong>{loading ? "..." : summary.completed}</strong>
         </article>
         <article className="stat-card">
@@ -138,16 +145,12 @@ const Dashboard = () => {
         <article className="panel">
           <h2>Monthly progress</h2>
           {analytics?.trends?.monthlyProgress?.length ? (
-            <div className="mini-chart progress-chart">
-              {analytics.trends.monthlyProgress.slice(-6).map((item) => (
-                <span
-                  aria-label={`${item.month} ${item.averageScore}%`}
-                  key={item.month}
-                  style={{ height: `${Math.max(item.averageScore, 6)}%` }}
-                  title={`${item.month}: ${item.averageScore}%`}
-                />
-              ))}
-            </div>
+            <ChartPanel
+              label="Monthly progress"
+              labels={analytics.trends.monthlyProgress.slice(-6).map((item) => item.month)}
+              type="bar"
+              values={analytics.trends.monthlyProgress.slice(-6).map((item) => item.averageScore)}
+            />
           ) : (
             <p className="empty-state">No data available.</p>
           )}
@@ -212,16 +215,11 @@ const Dashboard = () => {
         <article className="panel">
           <h2>Interview score trend</h2>
           {analytics?.trends?.interviewScores?.length ? (
-            <div className="mini-chart">
-              {analytics.trends.interviewScores.slice(-8).map((item, index) => (
-                <span
-                  aria-label={`${item.role} ${item.score}%`}
-                  key={`${item.date}-${index}`}
-                  style={{ height: `${Math.max(item.score, 6)}%` }}
-                  title={`${item.role}: ${item.score}%`}
-                />
-              ))}
-            </div>
+            <ChartPanel
+              label="Score trend"
+              labels={analytics.trends.interviewScores.slice(-8).map((item) => item.role)}
+              values={analytics.trends.interviewScores.slice(-8).map((item) => item.score)}
+            />
           ) : (
             <p className="empty-state">No data available.</p>
           )}

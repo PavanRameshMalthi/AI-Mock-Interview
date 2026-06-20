@@ -5,6 +5,7 @@ import AppRoutes from "./AppRoutes";
 jest.mock("../services/authService", () => ({
   login: jest.fn(),
   register: jest.fn(),
+  refreshSession: jest.fn(() => Promise.reject(new Error("No session"))),
 }));
 
 jest.mock("../services/dashboardService", () => ({
@@ -40,7 +41,7 @@ test("renders public landing route", () => {
   expect(screen.getByRole("heading", { name: /master every interview/i })).toBeInTheDocument();
 });
 
-test("redirects protected routes to login", () => {
+test("redirects protected routes to login", async () => {
   localStorage.clear();
 
   render(
@@ -49,5 +50,5 @@ test("redirects protected routes to login", () => {
     </MemoryRouter>
   );
 
-  expect(screen.getByRole("heading", { name: /sign in/i })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: /sign in/i })).toBeInTheDocument();
 });
