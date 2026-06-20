@@ -9,10 +9,10 @@ test("renders landing page calls to action", () => {
     </MemoryRouter>
   );
 
-  expect(screen.getByRole("heading", { name: /master every interview/i })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /start interview/i })).toHaveAttribute(
+  expect(screen.getByRole("heading", { name: /master tech interview/i })).toBeInTheDocument();
+  expect(screen.getAllByRole("link", { name: /get started free/i })[0]).toHaveAttribute(
     "href",
-    "/interview-setup"
+    "/register"
   );
   expect(screen.getByRole("heading", { name: /resume ats analysis/i })).toBeInTheDocument();
 });

@@ -38,7 +38,7 @@ test("renders public landing route", () => {
     </MemoryRouter>
   );
 
-  expect(screen.getByRole("heading", { name: /master every interview/i })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: /master tech interview/i })).toBeInTheDocument();
 });
 
 test("redirects protected routes to login", async () => {
