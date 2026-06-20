@@ -71,12 +71,21 @@ const InterviewSetup = () => {
         <label>
           Target role
           <input
+            list="target-role-suggestions"
             name="role"
             onChange={handleChange}
-            placeholder="Frontend Developer"
+            placeholder="Enter your target role"
             required
             value={formData.role}
           />
+          <datalist id="target-role-suggestions">
+            <option value="Frontend Developer" />
+            <option value="Backend Developer" />
+            <option value="Full Stack Developer" />
+            <option value="Software Engineer" />
+            <option value="Data Analyst" />
+            <option value="Machine Learning Engineer" />
+          </datalist>
         </label>
 
         <label>

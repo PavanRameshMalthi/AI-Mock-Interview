@@ -16,6 +16,7 @@ const InterviewSession = () => {
   const [listening, setListening] = useState(false);
 
   const current = questions[currentQuestion];
+  const hasAnswer = answer.trim().length > 0;
   const progress = questions.length
     ? Math.round(((currentQuestion + 1) / questions.length) * 100)
     : 0;
@@ -30,7 +31,7 @@ const InterviewSession = () => {
 
   const nextQuestion = () => {
     if (!answer.trim()) {
-      showError("Add an answer before moving on");
+      showError("Please enter your answer before continuing.");
       return;
     }
 
@@ -145,7 +146,12 @@ const InterviewSession = () => {
           >
             Previous
           </button>
-          <button className="btn btn-primary" onClick={nextQuestion}>
+          {!hasAnswer ? (
+            <p className="field-error" role="status">
+              Please enter your answer before continuing.
+            </p>
+          ) : null}
+          <button className="btn btn-primary" disabled={!hasAnswer} onClick={nextQuestion}>
             {currentQuestion === questions.length - 1
               ? "Finish interview"
               : "Next question"}

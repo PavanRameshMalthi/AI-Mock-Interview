@@ -5,7 +5,8 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 ## Features
 
 - JWT-based registration, login, logout, refresh sessions, forgot password, and reset password
-- Demo-ready Google, LinkedIn, and phone login endpoints for final project walkthroughs
+- Google OAuth and LinkedIn OAuth start/callback routes with user upsert and JWT session creation
+- Phone OTP authentication with OTP request, expiry, attempt limits, verification, and session creation
 - Protected dashboard and interview workflows
 - PDF resume upload with server-side file validation
 - ATS resume fit scoring with keyword, section, impact, and role-alignment checks
@@ -134,6 +135,14 @@ FRONTEND_URL=http://localhost:5173
 MONGO_URI=mongodb://127.0.0.1:27017/ai_mock_interview
 JWT_SECRET=replace-with-a-long-random-secret
 GEMINI_API_KEY=replace-with-your-gemini-api-key
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:5000/api/auth/google/callback
+LINKEDIN_CLIENT_ID=your-linkedin-client-id
+LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
+LINKEDIN_REDIRECT_URI=http://localhost:5000/api/auth/linkedin/callback
+PHONE_OTP_TTL_MINUTES=10
+PASSWORD_RESET_TTL_MINUTES=30
 ```
 
 Create `client/.env` from `client/.env.example`:
@@ -198,10 +207,10 @@ cd server
 npm test
 ```
 
-Current verified coverage:
+Current verified test run:
 
-- Frontend statements: 51.44%
-- Backend statements: 65.58%
+- Backend: 37 passed, 37 total
+- Frontend: 30 passed, 30 total
 
 Run lint:
 
@@ -257,7 +266,8 @@ http://localhost:5000/api
 }
 ```
 
-- In development, the response includes a reset token for easy local testing.
+- Generates a secure reset token, stores only its hash, applies expiration, and sends reset instructions through the auth delivery abstraction.
+- In non-production, the response also includes a development reset link for local testing.
 
 `POST /auth/reset-password`
 
@@ -267,6 +277,14 @@ http://localhost:5000/api
   "password": "NewPassword123!"
 }
 ```
+
+`GET /auth/google/start`
+
+- Redirects the browser to Google OAuth with `openid email profile` scope.
+
+`GET /auth/google/callback`
+
+- Exchanges the authorization code, reads the Google profile, creates or updates the user, issues a JWT, sets the refresh cookie, and redirects back to the client.
 
 `POST /auth/google`
 
@@ -278,6 +296,14 @@ http://localhost:5000/api
 }
 ```
 
+`GET /auth/linkedin/start`
+
+- Redirects the browser to LinkedIn OAuth with `openid profile email` scope.
+
+`GET /auth/linkedin/callback`
+
+- Exchanges the authorization code, reads the LinkedIn profile, creates or updates the user, issues a JWT, sets the refresh cookie, and redirects back to the client.
+
 `POST /auth/linkedin`
 
 ```json
@@ -286,6 +312,14 @@ http://localhost:5000/api
   "name": "Alex Morgan",
   "linkedinId": "linkedin-profile-id",
   "headline": "Frontend Developer"
+}
+```
+
+`POST /auth/phone/send-otp`
+
+```json
+{
+  "phone": "+919876543210"
 }
 ```
 
@@ -299,7 +333,7 @@ http://localhost:5000/api
 }
 ```
 
-Google and LinkedIn currently use trusted profile payloads suitable for demo/local submission builds. For production, connect these endpoints to real OAuth callbacks and provider token verification. Phone login uses `123456` as the development OTP and should be connected to an SMS OTP provider before production use.
+Google and LinkedIn browser buttons use the OAuth start routes. The JSON provider endpoints remain available for controlled integration tests or trusted server-side provider verification. Phone OTP uses a development `123456` code outside production and must be connected to an SMS provider before production launch.
 
 `POST /auth/verify-email`
 
@@ -384,7 +418,7 @@ When `resumeText` is provided, the response also includes `atsScore`.
 }
 ```
 
-The evaluation response includes technical, communication, problem-solving, overall, feedback, and optional ATS scoring. Interview history stores the final score and ATS snapshot.
+The evaluation response includes correctness-oriented technical scoring, communication, problem-solving, relevance, completeness, question-level feedback, correct signals, incorrect signals, correct answers, improvement suggestions, and optional ATS scoring. Interview history stores the final score and ATS snapshot.
 
 ### History
 
@@ -496,8 +530,7 @@ For production, provide real secrets through your environment manager instead of
 - Webcam mock interview recording
 - Payment/subscription tiers
 - Public certificate verification page
-- Real Google OAuth token verification and LinkedIn OAuth callback handling
-- SMS provider integration for production phone OTP delivery
+- Transactional email and SMS provider adapters for production delivery
 - Advanced radar charts and cohort analytics
 - Pagination for large interview history collections
 - CI/CD pipeline

@@ -53,6 +53,16 @@ const phoneLogin = async (data) => {
   return response.data;
 };
 
+const sendPhoneOtp = async (data) => {
+  const response = await api.post("/auth/phone/send-otp", data);
+  return response.data;
+};
+
+const getOAuthStartUrl = (provider) => {
+  const baseUrl = api.defaults?.baseURL || "/api";
+  return `${baseUrl.replace(/\/$/, "")}/auth/${provider}/start`;
+};
+
 export default {
   login,
   register,
@@ -62,5 +72,7 @@ export default {
   resetPassword,
   googleLogin,
   linkedinLogin,
+  sendPhoneOtp,
   phoneLogin,
+  getOAuthStartUrl,
 };

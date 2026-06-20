@@ -50,7 +50,7 @@ test("prevents moving forward without an answer", async () => {
     </MemoryRouter>
   );
 
-  await userEvent.click(screen.getByRole("button", { name: /finish interview/i }));
-
-  expect(showError).toHaveBeenCalledWith("Add an answer before moving on");
+  expect(screen.getByRole("button", { name: /finish interview/i })).toBeDisabled();
+  expect(screen.getByText("Please enter your answer before continuing.")).toBeInTheDocument();
+  expect(showError).not.toHaveBeenCalled();
 });

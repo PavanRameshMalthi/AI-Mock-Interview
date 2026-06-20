@@ -73,7 +73,7 @@ const ResetPassword = () => {
           <PasswordField
             autoComplete="new-password"
             onChange={handleChange}
-            placeholder="New password"
+            placeholder="Enter your password"
             value={formData.password}
           />
 

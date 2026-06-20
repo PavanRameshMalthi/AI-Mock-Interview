@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaGoogle, FaLinkedin, FaPhoneAlt } from "react-icons/fa";
+import { FaLinkedin, FaPhoneAlt } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField, { PasswordStrength } from "../../components/UI/PasswordField";
 import { getPasswordChecks } from "../../utils/passwordUtils";
@@ -15,9 +16,12 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     phone: "",
-    otp: "123456",
+    otp: "",
   });
   const [providerLoading, setProviderLoading] = useState("");
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phonePattern = /^\+?[1-9]\d{7,14}$/;
 
   const checks = getPasswordChecks(formData.password);
   const passwordReady = Object.values(checks).every(Boolean);
@@ -52,6 +56,11 @@ const Register = () => {
       return;
     }
 
+    if (!emailPattern.test(formData.email.trim())) {
+      showError("Enter a valid email address");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -77,6 +86,47 @@ const Register = () => {
   };
 
   const handleProviderSignup = async (provider) => {
+    if (provider === "google") {
+      window.location.assign(authService.getOAuthStartUrl("google"));
+      return;
+    }
+
+    if (provider === "linkedin") {
+      window.location.assign(authService.getOAuthStartUrl("linkedin"));
+      return;
+    }
+
+    if (provider === "phone") {
+      const normalizedPhone = formData.phone.trim().replace(/[^\d+]/g, "");
+
+      if (!phonePattern.test(normalizedPhone)) {
+        showError("Enter a valid phone number");
+        return;
+      }
+
+      if (!phoneOtpSent) {
+        setProviderLoading(provider);
+        try {
+          const response = await authService.sendPhoneOtp({ phone: normalizedPhone });
+          setPhoneOtpSent(true);
+          if (response.otp) {
+            setFormData((current) => ({ ...current, otp: response.otp }));
+          }
+          showSuccess("OTP sent successfully");
+        } catch (error) {
+          showError(error.response?.data?.message || "Unable to send OTP");
+        } finally {
+          setProviderLoading("");
+        }
+        return;
+      }
+
+      if (!formData.otp.trim()) {
+        showError("Enter OTP");
+        return;
+      }
+    }
+
     setProviderLoading(provider);
 
     try {
@@ -103,7 +153,7 @@ const Register = () => {
 
       if (provider === "phone") {
         response = await authService.phoneLogin({
-          phone: formData.phone,
+          phone: formData.phone.trim().replace(/[^\d+]/g, ""),
           otp: formData.otp,
           name,
         });
@@ -146,7 +196,7 @@ const Register = () => {
               autoComplete="email"
               name="email"
               onChange={handleChange}
-              placeholder="you@example.com"
+              placeholder="Enter your email address"
               required
               type="email"
               value={formData.email}
@@ -156,7 +206,7 @@ const Register = () => {
           <PasswordField
             autoComplete="new-password"
             onChange={handleChange}
-            placeholder="Use a strong password"
+            placeholder="Enter your password"
             value={formData.password}
           />
 
@@ -181,7 +231,7 @@ const Register = () => {
                 autoComplete="tel"
                 name="phone"
                 onChange={handleChange}
-                placeholder="+91 98765 43210"
+                placeholder="Enter your phone number"
                 type="tel"
                 value={formData.phone}
               />
@@ -192,7 +242,7 @@ const Register = () => {
                 inputMode="numeric"
                 name="otp"
                 onChange={handleChange}
-                placeholder="123456"
+                placeholder="Enter OTP"
                 type="text"
                 value={formData.otp}
               />
@@ -211,7 +261,7 @@ const Register = () => {
             onClick={() => handleProviderSignup("google")}
             type="button"
           >
-            <FaGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Sign up with Google"}
+            <FcGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Continue with Google"}
           </button>
           <button
             className="btn btn-secondary full-width"
@@ -219,7 +269,7 @@ const Register = () => {
             onClick={() => handleProviderSignup("linkedin")}
             type="button"
           >
-            <FaLinkedin aria-hidden="true" /> {providerLoading === "linkedin" ? "Connecting..." : "Sign up with LinkedIn"}
+            <FaLinkedin aria-hidden="true" /> {providerLoading === "linkedin" ? "Connecting..." : "Continue with LinkedIn"}
           </button>
           <button
             className="btn btn-secondary full-width"
@@ -227,7 +277,7 @@ const Register = () => {
             onClick={() => handleProviderSignup("phone")}
             type="button"
           >
-            <FaPhoneAlt aria-hidden="true" /> {providerLoading === "phone" ? "Verifying..." : "Sign up with Phone"}
+            <FaPhoneAlt aria-hidden="true" /> {providerLoading === "phone" ? "Working..." : phoneOtpSent ? "Verify OTP" : "Continue with Phone Number"}
           </button>
         </div>
 

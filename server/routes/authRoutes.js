@@ -10,7 +10,12 @@ const {
   verifyEmail,
   resendEmailVerification,
   googleAuth,
+  googleStart,
+  googleCallback,
   linkedinAuth,
+  linkedinStart,
+  linkedinCallback,
+  sendPhoneOtp,
   phoneAuth,
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -22,6 +27,9 @@ const {
   forgotPasswordRules,
   resetPasswordRules,
   verifyEmailRules,
+  phoneOtpRules,
+  phoneLoginRules,
+  providerLoginRules,
 } = require("../validators/authValidators");
 
 const router = express.Router();
@@ -35,8 +43,13 @@ router.post("/forgot-password", forgotPasswordRules, validate, forgotPassword);
 router.post("/reset-password", resetPasswordRules, validate, resetPassword);
 router.post("/verify-email", verifyEmailRules, validate, verifyEmail);
 router.post("/resend-verification", authMiddleware, resendEmailVerification);
-router.post("/google", googleAuth);
-router.post("/linkedin", linkedinAuth);
-router.post("/phone", phoneAuth);
+router.get("/google/start", googleStart);
+router.get("/google/callback", googleCallback);
+router.get("/linkedin/start", linkedinStart);
+router.get("/linkedin/callback", linkedinCallback);
+router.post("/google", providerLoginRules, validate, googleAuth);
+router.post("/linkedin", providerLoginRules, validate, linkedinAuth);
+router.post("/phone/send-otp", phoneOtpRules, validate, sendPhoneOtp);
+router.post("/phone", phoneLoginRules, validate, phoneAuth);
 
 module.exports = router;

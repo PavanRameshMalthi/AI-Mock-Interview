@@ -69,6 +69,16 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     passwordResetExpires: Date,
+    phoneOtpHash: {
+      type: String,
+      select: false,
+    },
+    phoneOtpExpires: Date,
+    phoneOtpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
     emailVerificationTokenHash: {
       type: String,
       select: false,

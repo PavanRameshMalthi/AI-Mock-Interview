@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaGoogle, FaLinkedin, FaPhoneAlt } from "react-icons/fa";
+import { FaLinkedin, FaPhoneAlt } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField from "../../components/UI/PasswordField";
 import authService from "../../services/authService";
@@ -11,12 +12,34 @@ const Login = () => {
     email: "",
     password: "",
     phone: "",
-    otp: "123456",
+    otp: "",
     rememberMe: true,
   });
   const [loading, setLoading] = useState(false);
   const [providerLoading, setProviderLoading] = useState("");
-  const isValid = formData.email.trim() && formData.password;
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phonePattern = /^\+?[1-9]\d{7,14}$/;
+  const isValid = emailPattern.test(formData.email.trim()) && formData.password;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const encodedUser = params.get("user");
+
+    if (!token || !encodedUser) return;
+
+    try {
+      const base64 = encodedUser.replace(/-/g, "+").replace(/_/g, "/");
+      const paddedBase64 = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", atob(paddedBase64));
+      window.history.replaceState({}, "", "/dashboard");
+      navigate("/dashboard", { replace: true });
+    } catch {
+      showError("Unable to restore OAuth session");
+    }
+  }, [navigate]);
 
   const storeSession = (response) => {
     const storage = formData.rememberMe ? localStorage : sessionStorage;
@@ -37,6 +60,17 @@ const Login = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
+
+    if (!emailPattern.test(formData.email.trim())) {
+      showError("Enter a valid email address");
+      return;
+    }
+
+    if (!formData.password) {
+      showError("Enter your password");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -56,6 +90,47 @@ const Login = () => {
   };
 
   const handleProviderLogin = async (provider) => {
+    if (provider === "google") {
+      window.location.assign(authService.getOAuthStartUrl("google"));
+      return;
+    }
+
+    if (provider === "linkedin") {
+      window.location.assign(authService.getOAuthStartUrl("linkedin"));
+      return;
+    }
+
+    if (provider === "phone") {
+      const normalizedPhone = formData.phone.trim().replace(/[^\d+]/g, "");
+
+      if (!phonePattern.test(normalizedPhone)) {
+        showError("Enter a valid phone number");
+        return;
+      }
+
+      if (!phoneOtpSent) {
+        setProviderLoading(provider);
+        try {
+          const response = await authService.sendPhoneOtp({ phone: normalizedPhone });
+          setPhoneOtpSent(true);
+          if (response.otp) {
+            setFormData((current) => ({ ...current, otp: response.otp }));
+          }
+          showSuccess("OTP sent successfully");
+        } catch (error) {
+          showError(error.response?.data?.message || "Unable to send OTP");
+        } finally {
+          setProviderLoading("");
+        }
+        return;
+      }
+
+      if (!formData.otp.trim()) {
+        showError("Enter OTP");
+        return;
+      }
+    }
+
     setProviderLoading(provider);
 
     try {
@@ -82,7 +157,7 @@ const Login = () => {
 
       if (provider === "phone") {
         response = await authService.phoneLogin({
-          phone: formData.phone,
+          phone: formData.phone.trim().replace(/[^\d+]/g, ""),
           otp: formData.otp,
           name: "Phone Candidate",
         });
@@ -112,7 +187,7 @@ const Login = () => {
               autoComplete="email"
               name="email"
               onChange={handleChange}
-              placeholder="you@example.com"
+              placeholder="Enter your email address"
               required
               type="email"
               value={formData.email}
@@ -133,7 +208,7 @@ const Login = () => {
                 autoComplete="tel"
                 name="phone"
                 onChange={handleChange}
-                placeholder="+91 98765 43210"
+                placeholder="Enter your phone number"
                 type="tel"
                 value={formData.phone}
               />
@@ -144,7 +219,7 @@ const Login = () => {
                 inputMode="numeric"
                 name="otp"
                 onChange={handleChange}
-                placeholder="123456"
+                placeholder="Enter OTP"
                 type="text"
                 value={formData.otp}
               />
@@ -178,7 +253,7 @@ const Login = () => {
             onClick={() => handleProviderLogin("google")}
             type="button"
           >
-            <FaGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Continue with Google"}
+            <FcGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Continue with Google"}
           </button>
           <button
             className="btn btn-secondary full-width"
@@ -194,7 +269,7 @@ const Login = () => {
             onClick={() => handleProviderLogin("phone")}
             type="button"
           >
-            <FaPhoneAlt aria-hidden="true" /> {providerLoading === "phone" ? "Verifying..." : "Continue with Phone"}
+            <FaPhoneAlt aria-hidden="true" /> {providerLoading === "phone" ? "Working..." : phoneOtpSent ? "Verify OTP" : "Continue with Phone Number"}
           </button>
         </div>
 
