@@ -8,11 +8,11 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 - Google OAuth and LinkedIn OAuth start/callback routes with user upsert and JWT session creation
 - Phone OTP authentication with OTP request, expiry, attempt limits, verification, and session creation
 - Protected dashboard and interview workflows
-- PDF resume upload with server-side file validation
+- PDF and DOCX resume upload with server-side file signature validation
 - ATS resume fit scoring with keyword, section, impact, and role-alignment checks
 - AI question generation with a local fallback when the AI provider is unavailable
 - Guided interview session with answer persistence
-- Voice interview support with question playback, microphone answers, and text fallback
+- Voice interview support with question playback, live transcript, pause/resume recording, autosave, and text fallback
 - AI evaluation with deterministic local fallback scoring and saved interview history
 - PDF scorecard export
 - Certificate generator for completed interviews
@@ -209,8 +209,8 @@ npm test
 
 Current verified test run:
 
-- Backend: 37 passed, 37 total
-- Frontend: 30 passed, 30 total
+- Backend: 38 passed, 38 total
+- Frontend: 31 passed, 31 total
 
 Run lint:
 
@@ -354,7 +354,7 @@ Google and LinkedIn browser buttons use the OAuth start routes. The JSON provide
 
 - Protected route
 - Multipart form field: `resume`
-- PDF only
+- PDF or DOCX only
 - Max size: 5 MB
 - Returns extracted text and a general ATS readiness score
 

@@ -28,12 +28,15 @@ const upload = multer({
     files: 1,
   },
   fileFilter: (req, file, cb) => {
-    const isPdf =
-      file.mimetype === "application/pdf" &&
-      path.extname(file.originalname).toLowerCase() === ".pdf";
+    const extension = path.extname(file.originalname).toLowerCase();
+    const isPdf = file.mimetype === "application/pdf" && extension === ".pdf";
+    const isDocx =
+      file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
+      extension === ".docx";
 
-    if (!isPdf) {
-      return cb(new Error("Only PDF resumes are allowed"));
+    if (!isPdf && !isDocx) {
+      return cb(new Error("Only PDF and DOCX resumes are allowed"));
     }
 
     cb(null, true);

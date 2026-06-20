@@ -37,7 +37,7 @@ test("uploads a valid PDF resume and stores extracted text", async () => {
     </MemoryRouter>
   );
 
-  await userEvent.upload(screen.getByLabelText(/choose a pdf resume/i), file);
+  await userEvent.upload(screen.getByLabelText(/choose a pdf or docx resume/i), file);
   await userEvent.click(screen.getByRole("button", { name: /upload resume/i }));
 
   await waitFor(() => {
@@ -63,10 +63,27 @@ test("rejects non-PDF files before upload", async () => {
     </MemoryRouter>
   );
 
-  await user.upload(screen.getByLabelText(/choose a pdf resume/i), file);
+  await user.upload(screen.getByLabelText(/choose a pdf or docx resume/i), file);
 
-  expect(showError).toHaveBeenCalledWith("Please select a PDF file");
+  expect(showError).toHaveBeenCalledWith("Please select a PDF or DOCX file");
   expect(resumeService.uploadResume).not.toHaveBeenCalled();
+});
+
+test("accepts DOCX resumes before upload", async () => {
+  const file = new File(["content"], "resume.docx", {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  });
+
+  render(
+    <MemoryRouter>
+      <ResumeUpload />
+    </MemoryRouter>
+  );
+
+  await userEvent.upload(screen.getByLabelText(/choose a pdf or docx resume/i), file);
+
+  expect(screen.getByText("resume.docx")).toBeInTheDocument();
+  expect(showError).not.toHaveBeenCalled();
 });
 
 test("requires a selected file before uploading", async () => {
@@ -78,5 +95,5 @@ test("requires a selected file before uploading", async () => {
 
   await userEvent.click(screen.getByRole("button", { name: /upload resume/i }));
 
-  expect(showError).toHaveBeenCalledWith("Choose a PDF resume first");
+  expect(showError).toHaveBeenCalledWith("Choose a PDF or DOCX resume first");
 });

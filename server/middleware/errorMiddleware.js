@@ -27,7 +27,12 @@ const errorHandler = (error, req, res, next) => {
     error.statusCode ||
     (error.code === 11000 ? 409 : undefined) ||
     (error.name === "MulterError" || error.name === "ValidationError" ? 400 : undefined) ||
-    (error.message === "Only PDF resumes are allowed" ? 400 : 500);
+    (
+      error.message === "Only PDF resumes are allowed" ||
+      error.message === "Only PDF and DOCX resumes are allowed"
+        ? 400
+        : 500
+    );
 
   if (statusCode >= 500) {
     logger.error(

@@ -160,7 +160,7 @@ Return only JSON in this shape:
         localEvaluation
       );
     } catch {
-      evaluation = localEvaluation;
+      evaluation = enrichEvaluation(localEvaluation);
     }
 
     const atsScore = resumeText

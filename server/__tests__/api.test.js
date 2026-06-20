@@ -562,18 +562,35 @@ describe("resume upload API", () => {
     expect(response.body.message).toMatch(/upload/i);
   });
 
-  test("rejects DOCX resume uploads", async () => {
+  test("extracts text from a valid DOCX upload", async () => {
+    extractResumeText.mockResolvedValue("Skills Node Express Projects");
+
     const response = await request(app)
       .post("/api/resume/upload")
       .set("Authorization", `Bearer ${token()}`)
-      .attach("resume", Buffer.from("docx"), {
+      .attach("resume", Buffer.from("PK\u0003\u0004docx"), {
+        filename: "resume.docx",
+        contentType:
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.resumeText).toBe("Skills Node Express Projects");
+    expect(response.body.atsScore.score).toBeGreaterThan(0);
+  });
+
+  test("rejects corrupted DOCX uploads", async () => {
+    const response = await request(app)
+      .post("/api/resume/upload")
+      .set("Authorization", `Bearer ${token()}`)
+      .attach("resume", Buffer.from("not a docx"), {
         filename: "resume.docx",
         contentType:
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Only PDF resumes are allowed");
+    expect(response.body.message).toBe("Uploaded file is not a valid DOCX");
   });
 
   test("rejects TXT resume uploads", async () => {

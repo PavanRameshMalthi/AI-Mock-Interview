@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { showError } from "../../components/UI/Toast";
 
@@ -14,6 +14,10 @@ const InterviewSession = () => {
   );
   const [answer, setAnswer] = useState(answers[0] || "");
   const [listening, setListening] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState("");
+  const recognitionRef = useRef(null);
+  const finalTranscriptRef = useRef(answer);
 
   const current = questions[currentQuestion];
   const hasAnswer = answer.trim().length > 0;
@@ -28,6 +32,24 @@ const InterviewSession = () => {
     localStorage.setItem("answers", JSON.stringify(updatedAnswers));
     return updatedAnswers;
   };
+
+  useEffect(() => {
+    finalTranscriptRef.current = answer;
+    const timeoutId = window.setTimeout(() => {
+      const updatedAnswers = [...answers];
+      updatedAnswers[currentQuestion] = answer.trim();
+      localStorage.setItem("answers", JSON.stringify(updatedAnswers));
+    }, 600);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [answer, answers, currentQuestion]);
+
+  useEffect(
+    () => () => {
+      recognitionRef.current?.stop?.();
+    },
+    []
+  );
 
   const nextQuestion = () => {
     if (!answer.trim()) {
@@ -64,7 +86,7 @@ const InterviewSession = () => {
     window.speechSynthesis.speak(new SpeechSynthesisUtterance(current));
   };
 
-  const startVoiceAnswer = () => {
+  const startVoiceAnswer = ({ append = false } = {}) => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -73,24 +95,57 @@ const InterviewSession = () => {
       return;
     }
 
+    recognitionRef.current?.stop?.();
+
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
     recognition.interimResults = true;
-    recognition.continuous = false;
+    recognition.continuous = true;
+    finalTranscriptRef.current = append ? answer : "";
+    setLiveTranscript("");
+    setPaused(false);
     setListening(true);
+    recognitionRef.current = recognition;
 
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join(" ");
-      setAnswer(transcript);
+      let interimTranscript = "";
+      let finalTranscript = finalTranscriptRef.current;
+
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const transcript = event.results[index][0].transcript;
+        if (event.results[index].isFinal) {
+          finalTranscript = `${finalTranscript} ${transcript}`.trim();
+        } else {
+          interimTranscript = `${interimTranscript} ${transcript}`.trim();
+        }
+      }
+
+      finalTranscriptRef.current = finalTranscript;
+      setLiveTranscript(interimTranscript);
+      setAnswer([finalTranscript, interimTranscript].filter(Boolean).join(" "));
     };
     recognition.onerror = () => {
       setListening(false);
+      setPaused(false);
       showError("Unable to capture voice answer");
     };
-    recognition.onend = () => setListening(false);
+    recognition.onend = () => {
+      setListening(false);
+      recognitionRef.current = null;
+    };
     recognition.start();
+  };
+
+  const pauseVoiceAnswer = () => {
+    recognitionRef.current?.stop?.();
+    setPaused(true);
+    setListening(false);
+    setLiveTranscript("");
+    saveCurrentAnswer();
+  };
+
+  const resumeVoiceAnswer = () => {
+    startVoiceAnswer({ append: true });
   };
 
   if (!questions.length) {
@@ -125,10 +180,26 @@ const InterviewSession = () => {
           <button className="btn btn-secondary" onClick={readQuestion} type="button">
             Read question aloud
           </button>
-          <button className="btn btn-secondary" onClick={startVoiceAnswer} type="button">
-            {listening ? "Listening..." : "Answer with microphone"}
-          </button>
+          {listening ? (
+            <button className="btn btn-secondary" onClick={pauseVoiceAnswer} type="button">
+              Pause recording
+            </button>
+          ) : (
+            <button
+              className="btn btn-secondary"
+              onClick={paused ? resumeVoiceAnswer : () => startVoiceAnswer()}
+              type="button"
+            >
+              {paused ? "Resume recording" : "Answer with microphone"}
+            </button>
+          )}
         </div>
+        {listening || liveTranscript ? (
+          <div className="transcript-panel" role="status">
+            <span>{listening ? "Live transcript" : "Transcript paused"}</span>
+            <p>{liveTranscript || answer || "Listening for your answer..."}</p>
+          </div>
+        ) : null}
         <label>
           Your answer
           <textarea

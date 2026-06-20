@@ -748,6 +748,29 @@ summary {
   color: var(--primary);
 }
 
+.transcript-panel {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.transcript-panel span {
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.transcript-panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .progress-track,
 .meter {
   overflow: hidden;

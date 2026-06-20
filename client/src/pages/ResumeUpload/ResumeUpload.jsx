@@ -9,6 +9,10 @@ import {
 import resumeService from "../../services/resumeService";
 
 const ResumeUpload = () => {
+  const allowedTypes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
   const [file, setFile] = useState(null);
   const [resumeText, setResumeText] = useState(
     localStorage.getItem("resumeText") || ""
@@ -21,8 +25,8 @@ const ResumeUpload = () => {
   const handleFileChange = (event) => {
     const selected = event.target.files?.[0] || null;
 
-    if (selected && selected.type !== "application/pdf") {
-      showError("Please select a PDF file");
+    if (selected && !allowedTypes.includes(selected.type)) {
+      showError("Please select a PDF or DOCX file");
       event.target.value = "";
       setFile(null);
       return;
@@ -40,7 +44,7 @@ const ResumeUpload = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      showError("Choose a PDF resume first");
+      showError("Choose a PDF or DOCX resume first");
       return;
     }
 
@@ -69,15 +73,19 @@ const ResumeUpload = () => {
         <p className="eyebrow">Resume context</p>
         <h1>Upload resume</h1>
         <p className="muted">
-          PDF only, up to 5 MB. The extracted text stays in this browser for
+          PDF or DOCX, up to 5 MB. The extracted text stays in this browser for
           the next interview setup.
         </p>
       </header>
 
       <section className="panel">
         <label className="file-drop">
-          <input accept=".pdf,application/pdf" onChange={handleFileChange} type="file" />
-          <span>{file ? file.name : "Choose a PDF resume"}</span>
+          <input
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={handleFileChange}
+            type="file"
+          />
+          <span>{file ? file.name : "Choose a PDF or DOCX resume"}</span>
         </label>
         <div className="button-row">
           <button className="btn btn-primary" onClick={handleUpload}>
