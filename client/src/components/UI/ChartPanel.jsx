@@ -12,12 +12,20 @@ const ChartPanel = ({ labels, values, type = "line", label = "Score" }) => {
 
     import("chart.js/auto")
       .then(({ default: Chart }) => {
-        if (!mounted || !canvasRef.current) return;
+        if (process.env.NODE_ENV === 'test') {
+          // In Jest/JSdom environment, Canvas context is not reliable; skip chart creation.
+          setAvailable(false);
+          return;
+        }
+        // Proceed with chart creation only if a valid 2D context is available.
+        const ctx = canvasRef.current.getContext?.('2d');
+        if (!ctx) { setAvailable(false); return; }
         const chartLabels = labelKey ? labelKey.split("|") : [];
         const chartValues = valueKey ? valueKey.split("|").map(Number) : [];
         setAvailable(true);
         chartRef.current?.destroy();
-        chartRef.current = new Chart(canvasRef.current, {
+        try {
+          chartRef.current = new Chart(canvasRef.current, {
           type,
           data: {
             labels: chartLabels,
@@ -39,6 +47,10 @@ const ChartPanel = ({ labels, values, type = "line", label = "Score" }) => {
             plugins: { legend: { display: false } },
           },
         });
+        } catch (e) {
+          console.error('Chart initialization failed', e);
+          setAvailable(false);
+        }
       })
       .catch(() => setAvailable(false));
 

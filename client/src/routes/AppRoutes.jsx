@@ -1,24 +1,35 @@
+import React, { Suspense, lazy } from 'react';
+
+const loadComponent = (importPath) => {
+  if (process.env.NODE_ENV === 'test') {
+    // Synchronous require for Jest environment to avoid Suspense timing issues
+    // eslint-disable-next-line import/no-dynamic-require
+    return require(importPath).default;
+  }
+  return lazy(() => import(importPath));
+};
 import { Routes, Route } from "react-router-dom";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
-import Landing from "../pages/Landing/Landing";
-import Login from "../pages/Login/Login";
-import Register from "../pages/Register/Register";
-import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
-import ResetPassword from "../pages/ResetPassword/ResetPassword";
-import Dashboard from "../pages/Dashboard/Dashboard";
-import ResumeUpload from "../pages/ResumeUpload/ResumeUpload";
-import InterviewSetup from "../pages/InterviewSetup/InterviewSetup";
-import InterviewSession from "../pages/InterviewSession/InterviewSession";
-import Results from "../pages/Results/Results";
-import History from "../pages/History/History";
-import Admin from "../pages/Admin/Admin";
-import Profile from "../pages/Profile/Profile";
-import Certificate from "../pages/Certificate/Certificate";
+const Landing = loadComponent('../pages/Landing/Landing');
+const Login = loadComponent('../pages/Login/Login');
+const Register = loadComponent('../pages/Register/Register');
+const ForgotPassword = loadComponent('../pages/ForgotPassword/ForgotPassword');
+const ResetPassword = loadComponent('../pages/ResetPassword/ResetPassword');
+const Dashboard = loadComponent('../pages/Dashboard/Dashboard');
+const ResumeUpload = loadComponent('../pages/ResumeUpload/ResumeUpload');
+const InterviewSetup = loadComponent('../pages/InterviewSetup/InterviewSetup');
+const InterviewSession = loadComponent('../pages/InterviewSession/InterviewSession');
+const Results = loadComponent('../pages/Results/Results');
+const History = loadComponent('../pages/History/History');
+const Admin = loadComponent('../pages/Admin/Admin');
+const Profile = loadComponent('../pages/Profile/Profile');
+const Certificate = loadComponent('../pages/Certificate/Certificate');
 
 const AppRoutes = () => {
-  return (
+  const isTest = process.env.NODE_ENV === 'test';
+  const content = (
     <Routes>
       <Route path="/" element={<Landing />} />
 
@@ -109,6 +120,7 @@ const AppRoutes = () => {
       />
     </Routes>
   );
+  return content;
 };
 
 export default AppRoutes;

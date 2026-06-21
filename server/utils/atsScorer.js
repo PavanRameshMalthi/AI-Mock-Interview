@@ -172,17 +172,19 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
   }
 
   return {
-    score,
-    level: getLevel(score),
-    matchedKeywords: matchedKeywords.slice(0, 12),
-    missingKeywords,
-    skillsDetected,
-    strengths: strengths.slice(0, 6),
-    weaknesses: weaknesses.slice(0, 6),
-    sectionScores,
-    recommendations,
-  };
-};
+  score,
+  level: getLevel(score),
+  matchedKeywords: matchedKeywords.slice(0, 12),
+  missingKeywords,
+  skillsDetected,
+  strongAreas: strengths.slice(0, 6),
+  weakAreas: weaknesses.slice(0, 6),
+  recommendedNextSkills: missingKeywords.slice(0, 5),
+  resumeEnhancementSuggestions: recommendations,
+  sectionScores,
+  // Keep original suggestions for backward compatibility
+  recommendations,
+};};
 
 module.exports = {
   scoreResumeForRole,
