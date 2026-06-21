@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaLinkedin } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
+import { motion } from "framer-motion";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField, { PasswordStrength } from "../../components/UI/PasswordField";
 import { getPasswordChecks } from "../../utils/passwordUtils";
@@ -16,7 +15,6 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
-  const [providerLoading, setProviderLoading] = useState("");
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const checks = getPasswordChecks(formData.password);
@@ -89,73 +87,46 @@ const Register = () => {
     sessionStorage.removeItem("user");
   };
 
-  const handleProviderSignup = async (provider) => {
-    if (provider === "google") {
-      window.location.assign(authService.getOAuthStartUrl("google"));
-      return;
-    }
 
-    if (provider === "linkedin") {
-      window.location.assign(authService.getOAuthStartUrl("linkedin"));
-      return;
-    }
-
-    setProviderLoading(provider);
-
-    try {
-      let response;
-      const email = formData.email.trim().toLowerCase();
-      const name = formData.name.trim() || (email ? email.split("@")[0] : "Demo Candidate");
-
-      if (provider === "google") {
-        response = await authService.googleLogin({
-          email: email || "google.demo@example.com",
-          name,
-          googleId: `google:${email || "demo"}`,
-        });
-      }
-
-      if (provider === "linkedin") {
-        response = await authService.linkedinLogin({
-          email: email || "linkedin.demo@example.com",
-          name,
-          linkedinId: `linkedin:${email || "demo"}`,
-          headline: "Interview candidate",
-        });
-      }
-
-      storeSession(response);
-      showSuccess("Account ready");
-      navigate("/dashboard");
-    } catch (error) {
-      showError(error.response?.data?.message || "Provider sign-up failed");
-    } finally {
-      setProviderLoading("");
-    }
-  };
 
   return (
     <main className="auth-page">
-      <section className="auth-card">
-        <p className="eyebrow">Get interview ready</p>
-        <h1>Create account</h1>
-        <p className="muted">Use a work email or personal email you trust.</p>
+      <motion.div
+        className="auth-card"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-6 text-center">
+          <Link to="/" className="text-xl font-black tracking-tight text-[var(--text)]">
+            AI Mock Interview
+          </Link>
+        </div>
+
+        <p className="eyebrow text-[var(--primary)] font-black uppercase tracking-widest text-xs mb-2">
+          Get interview ready
+        </p>
+        <h1 className="text-3xl font-black text-[var(--text)] mb-2">Signup</h1>
+        <p className="muted text-[var(--muted)] text-sm mb-6">
+          Use a work email or personal email you trust.
+        </p>
 
         <form className="form-grid" onSubmit={handleSubmit}>
-          <label>
+          <label className="text-sm font-bold text-[var(--text)]">
             Full name
             <input
               autoComplete="name"
               name="name"
               onChange={handleChange}
-              placeholder="Alex Morgan"
+              placeholder="Enter your full name"
               required
               type="text"
               value={formData.name}
+              className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--text)] placeholder-[var(--muted)] focus:border-[var(--primary)] focus:outline-none"
             />
           </label>
 
-          <label>
+          <label className="text-sm font-bold text-[var(--text)]">
             Email
             <input
               autoComplete="email"
@@ -165,13 +136,14 @@ const Register = () => {
               required
               type="email"
               value={formData.email}
+              className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--text)] placeholder-[var(--muted)] focus:border-[var(--primary)] focus:outline-none"
             />
           </label>
 
           <PasswordField
             autoComplete="new-password"
             onChange={handleChange}
-            placeholder="Enter your password"
+            placeholder="Create a password"
             value={formData.password}
           />
 
@@ -180,7 +152,7 @@ const Register = () => {
             label="Confirm password"
             name="confirmPassword"
             onChange={handleChange}
-            placeholder="Re-enter your password"
+            placeholder="Confirm your password"
             value={formData.confirmPassword}
           />
 
@@ -189,34 +161,18 @@ const Register = () => {
             password={formData.password}
           />
 
-          <button className="btn btn-primary full-width" disabled={!canSubmit}>
-            {loading ? "Creating account..." : "Create account"}
+          <button 
+            className="btn btn-primary full-width mt-4" 
+            disabled={!canSubmit}
+          >
+            {loading ? "Signing up..." : "Signup"}
           </button>
         </form>
 
-        <div className="auth-providers" aria-label="Alternative sign up options">
-          <button
-            className="btn btn-secondary full-width"
-            disabled={Boolean(providerLoading)}
-            onClick={() => handleProviderSignup("google")}
-            type="button"
-          >
-            <FcGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Continue with Google"}
-          </button>
-          <button
-            className="btn btn-secondary full-width"
-            disabled={Boolean(providerLoading)}
-            onClick={() => handleProviderSignup("linkedin")}
-            type="button"
-          >
-            <FaLinkedin aria-hidden="true" /> {providerLoading === "linkedin" ? "Connecting..." : "Continue with LinkedIn"}
-          </button>
-        </div>
-
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Sign in</Link>
+        <p className="auth-switch text-center text-sm text-[var(--muted)] mt-6">
+          Already have an account? <Link to="/login" className="text-[var(--primary)] hover:underline font-bold">Login</Link>
         </p>
-      </section>
+      </motion.div>
     </main>
   );
 };

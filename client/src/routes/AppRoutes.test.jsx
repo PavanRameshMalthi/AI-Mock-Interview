@@ -54,5 +54,5 @@ test("redirects protected routes to login", async () => {
     </MemoryRouter>
   );
 
-  expect(await screen.findByRole("heading", { name: /sign in/i })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: /login/i })).toBeInTheDocument();
 });

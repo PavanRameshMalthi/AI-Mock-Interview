@@ -60,7 +60,7 @@ const ForgotPassword = () => {
         ) : null}
 
         <p className="auth-switch">
-          Remembered it? <Link to="/login">Sign in</Link>
+          Remembered it? <Link to="/login">Login</Link>
         </p>
       </section>
     </main>

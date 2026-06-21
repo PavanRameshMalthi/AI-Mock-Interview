@@ -17,34 +17,17 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: function requiredPassword() {
-        return this.authProvider === "local";
-      },
+      required: true,
       select: false,
     },
-
 
     profilePicture: String,
 
     authProvider: {
       type: String,
-      enum: ["local", "google", "linkedin"],
+      enum: ["local"],
       default: "local",
     },
-
-    googleId: {
-      type: String,
-      sparse: true,
-      index: true,
-    },
-
-    linkedinId: {
-      type: String,
-      sparse: true,
-      index: true,
-    },
-
-    linkedinHeadline: String,
 
     isEmailVerified: {
       type: Boolean,

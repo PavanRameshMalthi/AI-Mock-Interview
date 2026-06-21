@@ -100,7 +100,7 @@ const ResetPassword = () => {
         </form>
 
         <p className="auth-switch">
-          Back to <Link to="/login">sign in</Link>
+          Back to <Link to="/login">Login</Link>
         </p>
       </section>
     </main>

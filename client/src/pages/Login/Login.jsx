@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaLinkedin } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
+import { motion } from "framer-motion";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField from "../../components/UI/PasswordField";
 import authService from "../../services/authService";
@@ -14,28 +13,8 @@ const Login = () => {
     rememberMe: true,
   });
   const [loading, setLoading] = useState(false);
-  const [providerLoading, setProviderLoading] = useState("");
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValid = emailPattern.test(formData.email.trim()) && formData.password;
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const encodedUser = params.get("user");
-
-    if (!token || !encodedUser) return;
-
-    try {
-      const base64 = encodedUser.replace(/-/g, "+").replace(/_/g, "/");
-      const paddedBase64 = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", atob(paddedBase64));
-      window.history.replaceState({}, "", "/dashboard");
-      navigate("/dashboard", { replace: true });
-    } catch {
-      showError("Unable to restore OAuth session");
-    }
-  }, [navigate]);
 
   const storeSession = (response) => {
     const storage = formData.rememberMe ? localStorage : sessionStorage;
@@ -86,60 +65,32 @@ const Login = () => {
     }
   };
 
-  const handleProviderLogin = async (provider) => {
-    if (provider === "google") {
-      window.location.assign(authService.getOAuthStartUrl("google"));
-      return;
-    }
 
-    if (provider === "linkedin") {
-      window.location.assign(authService.getOAuthStartUrl("linkedin"));
-      return;
-    }
-
-    setProviderLoading(provider);
-
-    try {
-      let response;
-      const email = formData.email.trim().toLowerCase();
-      const name = email ? email.split("@")[0] : "Demo Candidate";
-
-      if (provider === "google") {
-        response = await authService.googleLogin({
-          email: email || "google.demo@example.com",
-          name,
-          googleId: `google:${email || "demo"}`,
-        });
-      }
-
-      if (provider === "linkedin") {
-        response = await authService.linkedinLogin({
-          email: email || "linkedin.demo@example.com",
-          name,
-          linkedinId: `linkedin:${email || "demo"}`,
-          headline: "Interview candidate",
-        });
-      }
-
-      storeSession(response);
-      showSuccess("Signed in successfully");
-      navigate("/dashboard");
-    } catch (error) {
-      showError(error.response?.data?.message || "Provider sign-in failed");
-    } finally {
-      setProviderLoading("");
-    }
-  };
 
   return (
     <main className="auth-page">
-      <section className="auth-card">
-        <p className="eyebrow">Welcome back</p>
-        <h1>Sign in</h1>
-        <p className="muted">Continue your interview practice dashboard.</p>
+      <motion.div
+        className="auth-card"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-6 text-center">
+          <Link to="/" className="text-xl font-black tracking-tight text-[var(--text)]">
+            AI Mock Interview
+          </Link>
+        </div>
+
+        <p className="eyebrow text-[var(--primary)] font-black uppercase tracking-widest text-xs mb-2">
+          Welcome back
+        </p>
+        <h1 className="text-3xl font-black text-[var(--text)] mb-2">Login</h1>
+        <p className="muted text-[var(--muted)] text-sm mb-6">
+          Continue your interview practice dashboard.
+        </p>
 
         <form className="form-grid" onSubmit={handleLogin}>
-          <label>
+          <label className="text-sm font-bold text-[var(--text)]">
             Email
             <input
               autoComplete="email"
@@ -149,6 +100,7 @@ const Login = () => {
               required
               type="email"
               value={formData.email}
+              className="mt-1 block w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-[var(--text)] placeholder-[var(--muted)] focus:border-[var(--primary)] focus:outline-none"
             />
           </label>
 
@@ -159,8 +111,8 @@ const Login = () => {
             value={formData.password}
           />
 
-          <div className="auth-options">
-            <label className="checkbox-row">
+          <div className="auth-options flex items-center justify-between mt-2 mb-4">
+            <label className="checkbox-row flex items-center gap-2 text-sm text-[var(--muted)] cursor-pointer">
               <input
                 checked={formData.rememberMe}
                 name="rememberMe"
@@ -168,40 +120,27 @@ const Login = () => {
                   setFormData({ ...formData, rememberMe: event.target.checked })
                 }
                 type="checkbox"
+                className="rounded border-[var(--border)] bg-[var(--bg)] text-[var(--primary)] focus:ring-[var(--primary)]"
               />
               Remember me
             </label>
-            <Link to="/forgot-password">Forgot password?</Link>
+            <Link to="/forgot-password" className="text-sm text-[var(--primary)] hover:underline">
+              Forgot password?
+            </Link>
           </div>
 
-          <button className="btn btn-primary full-width" disabled={loading || !isValid}>
-            {loading ? "Signing in..." : "Sign in"}
+          <button 
+            className="btn btn-primary full-width" 
+            disabled={loading || !isValid}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <div className="auth-providers" aria-label="Alternative sign in options">
-          <button
-            className="btn btn-secondary full-width"
-            disabled={Boolean(providerLoading)}
-            onClick={() => handleProviderLogin("google")}
-            type="button"
-          >
-            <FcGoogle aria-hidden="true" /> {providerLoading === "google" ? "Connecting..." : "Continue with Google"}
-          </button>
-          <button
-            className="btn btn-secondary full-width"
-            disabled={Boolean(providerLoading)}
-            onClick={() => handleProviderLogin("linkedin")}
-            type="button"
-          >
-            <FaLinkedin aria-hidden="true" /> {providerLoading === "linkedin" ? "Connecting..." : "Continue with LinkedIn"}
-          </button>
-        </div>
-
-        <p className="auth-switch">
-          New here? <Link to="/register">Create an account</Link>
+        <p className="auth-switch text-center text-sm text-[var(--muted)] mt-6">
+          New here? <Link to="/register" className="text-[var(--primary)] hover:underline font-bold">Signup</Link>
         </p>
-      </section>
+      </motion.div>
     </main>
   );
 };

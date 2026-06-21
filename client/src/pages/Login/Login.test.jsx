@@ -27,7 +27,7 @@ test("logs in and stores auth state", async () => {
 
   await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
   await userEvent.type(screen.getByLabelText(/^password$/i), "Password123!");
-  await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
+  await userEvent.click(screen.getByRole("button", { name: /login/i }));
 
   expect(authService.login).toHaveBeenCalledWith({
     email: "test@example.com",

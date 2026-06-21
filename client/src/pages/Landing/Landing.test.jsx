@@ -10,7 +10,7 @@ test("renders landing page without fake social proof or removed landing actions"
   );
 
   expect(screen.getByRole("heading", { name: /practice technical interviews/i })).toBeInTheDocument();
-  expect(screen.getAllByRole("link", { name: /create account/i })[0]).toHaveAttribute(
+  expect(screen.getAllByRole("link", { name: /signup/i })[0]).toHaveAttribute(
     "href",
     "/register"
   );

@@ -38,21 +38,6 @@ const resetPassword = async (data) => {
   return response.data;
 };
 
-const googleLogin = async (data) => {
-  const response = await api.post("/auth/google", data);
-  return response.data;
-};
-
-const linkedinLogin = async (data) => {
-  const response = await api.post("/auth/linkedin", data);
-  return response.data;
-};
-
-const getOAuthStartUrl = (provider) => {
-  const baseUrl = api.defaults?.baseURL || "/api";
-  return `${baseUrl.replace(/\/$/, "")}/auth/${provider}/start`;
-};
-
 export default {
   login,
   register,
@@ -60,7 +45,4 @@ export default {
   logout,
   forgotPassword,
   resetPassword,
-  googleLogin,
-  linkedinLogin,
-  getOAuthStartUrl,
 };

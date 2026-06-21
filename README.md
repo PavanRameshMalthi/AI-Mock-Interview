@@ -1,505 +1,161 @@
 # 🎯 AI-Powered Mock Interview Platform
 
-An AI-driven interview preparation platform built using the MERN Stack and Gemini AI that helps students and job seekers practice interviews, receive intelligent feedback, analyze resumes, track progress, and improve interview performance.
+An AI-driven interview preparation platform built using the MERN Stack (MongoDB, Express, React, Node.js) and Gemini AI. This workspace helps students and job seekers practice mock interviews with real-time feedback, analyze resume ATS compatibility, track historical progress, generate comprehensive feedback reports, and obtain completion certificates.
 
 ---
 
-# 📖 Project Overview
+## 📖 Project Overview
 
-The AI-Powered Mock Interview Platform simulates real-world technical and HR interviews using Artificial Intelligence.
+Preparing for technical and HR interviews is often stressful and unstructured. The **AI-Powered Mock Interview Platform** solves this by providing a realistic, private, and highly detailed mock workspace. Users configure interviews by target role and difficulty, answer questions using text or voice, and receive itemized feedback on correctness, relevance, technical accuracy, and communication.
 
-Users can:
-
-* Practice mock interviews
-* Answer interview questions through text or speech
-* Receive AI-generated feedback
-* Analyze resume ATS compatibility
-* Track performance through analytics
-* Generate interview reports
-* Download completion certificates
-
-The platform is designed for:
-
-* Final Year Projects
-* College Demonstrations
-* Placement Preparation
-* Internship Preparation
-* Recruiter Portfolio Showcases
+### Problems Solved:
+* **Preparation Anxiety**: Practice in a simulated, low-stakes workspace.
+* **Vague Feedback**: Get precise coaching on exactly what concepts were correct, what was incorrect, and how to improve.
+* **Resume Gaps**: Extract keywords from your resume and measure ATS compatibility against target positions.
+* **Scattered Progress**: Store interview history, trend charts, and score analytics in a single unified dashboard.
 
 ---
 
-# 🚀 Key Features
+## 🚀 Key Features
 
-## 🔐 Authentication
+### 🔐 Authentication
+* **Email & Password Registration**: Register safely with custom input validation.
+* **Password Strength Checker**: Real-time feedback on uppercase, lowercase, numeric, and special character rules.
+* **Secure Email Login**: Fast session authentication issuing cookies.
+* **Forgot & Reset Password**: Secure token-based password recovery flow.
+* **JWT & Refresh Sessions**: Access tokens stored in memory and HTTP-only cookie-based refresh tokens.
+* **Protected Routes**: Middleware routing ensures dashboards and sessions are restricted to logged-in users.
 
-* User Registration
-* Secure Login
-* Google OAuth Login
-* LinkedIn OAuth Login
-* Forgot Password
-* Reset Password
-* JWT Authentication
-* Protected Routes
-* Session Persistence
+### 🤖 AI Mock Interview System
+* **Dynamic Setup**: Configure interviews for roles like Frontend, Backend, Data Science, or General fields with custom difficulty levels (Beginner, Intermediate, Advanced).
+* **Question Generation**: Leverages Gemini AI to generate role-specific questions.
+* **Speech-to-Text Integration**: Speak responses naturally using Web Speech API microphone transcripts.
+* **Resume Context Integration**: Optional text parsing to check for role-keyword gaps.
+* **Local Evaluation Fallback**: If the Gemini API key is missing or fails, the platform automatically switches to a robust, local deterministic text-analysis and keyword-matching evaluation engine.
 
----
+### 🧠 Evaluation Engine Metric Scoring
+Every answer is parsed across four key metrics:
+1. **Correctness (30%)**: Compares keywords against expected concepts.
+2. **Relevance (25%)**: Measures alignment with the question topic.
+3. **Technical Accuracy (25%)**: Calculates technical vocabulary density and correctness indicators.
+4. **Communication (20%)**: Checks answer length, paragraph structure, and example utilization.
 
-## 🤖 AI Mock Interview System
+### 📊 Dashboard & Analytics
+* **Summary Stats**: View total interviews taken, aggregate scores, and growth trendlines.
+* **Growth Charts**: Visual canvas elements mapping score improvement trends over time.
+* **Interview History**: Search, sort (by score or date), soft-delete, and restore completed interview scorecards.
 
-* Technical Interviews
-* HR Interviews
-* Resume-Aware Questions
-* Speech-to-Text Support
-* Gemini AI Evaluation
-* Real-Time Feedback
+### 📄 ATS Resume Analyzer
+* **Resume Upload**: Upload resumes in PDF or DOCX formats.
+* **ATS Compatibility Scoring**: Compares resume text with target role keywords.
+* **Skill Gap Analysis**: Lists detected skills, missing keywords, and suggestions to optimize the CV.
 
----
-
-## 🧠 AI Evaluation Engine
-
-Every answer is evaluated using:
-
-* Technical Accuracy
-* Relevance
-* Communication Skills
-* Confidence
-* Completeness
-
-Feedback includes:
-
-* What Was Correct
-* What Was Incorrect
-* Correct Answer
-* Why It Is Wrong
-* Improvement Suggestions
-* Topics To Learn
+### 📑 Reports & Certificates
+* **PDF Report Generation**: Export interview results to a readable PDF document.
+* **Completion Certificates**: Generate certificate documents detailing the target role, average score, and date of completion.
 
 ---
 
-## 📊 Analytics Dashboard
-
-Track interview performance using:
-
-* Total Interviews
-* Average Score
-* Best Score
-* Strong Areas
-* Weak Areas
-* Interview Streak
-
-Charts:
-
-* Score Trend
-* Weekly Progress
-* Monthly Progress
-* Skill Growth
-* Interview Activity
-
----
-
-## 📈 Improvement Tracker
-
-The system automatically identifies:
-
-* Mistakes Made
-* Weak Topics
-* Learning Recommendations
-* Improvement Roadmap
-
-Example:
-
-React → Learn Hooks
-
-Node.js → Improve REST API Concepts
-
-MongoDB → Study Aggregation Pipeline
-
----
-
-## 📄 ATS Resume Analyzer
-
-Supports:
-
-* PDF Upload
-* DOCX Upload
-
-Generates:
-
-* ATS Score
-* Keyword Analysis
-* Missing Skills Detection
-* Resume Suggestions
-
----
-
-## 📑 Interview Reports
-
-Generate:
-
-Interview_Report.pdf
-
-Includes:
-
-* Questions
-* Answers
-* Scores
-* Feedback
-* Suggestions
-* Improvement Areas
-
----
-
-## 🏆 Certificate Generator
-
-Generate:
-
-Certificate of Completion
-
-Includes:
-
-* Candidate Name
-* Interview Role
-* Score
-* Date
-* QR Verification
-
-Export:
-
-* PDF
-* Printable Certificate
-
----
-
-## 📚 Interview History
-
-Features:
-
-* Search
-* Filter
-* Sort
-* Delete
-* Restore
-* Detailed Reports
-
----
-
-## 🎨 Modern UI/UX
-
-* Responsive Design
-* Mobile Friendly
-* Tablet Friendly
-* Desktop Friendly
-* Dark Mode
-* Light Mode
-* System Theme
-* Framer Motion Animations
-* Toast Notifications
-
----
-
-# 🏗️ System Architecture
+## 🏗️ System Architecture
 
 ```text
-User
- │
- ▼
-React Frontend
- │
- ├── Authentication
- ├── Dashboard
- ├── ATS Analyzer
- ├── Interview Module
- ├── Analytics
- └── Reports & Certificates
- │
- ▼
-Express REST API
- │
- ├── Authentication APIs
- ├── Interview APIs
- ├── ATS APIs
- ├── Analytics APIs
- └── Report APIs
- │
- ▼
-MongoDB Database
- │
- ├── Users
- ├── Interviews
- ├── Feedback
- ├── ATS Results
- ├── Reports
- └── Certificates
- │
- ▼
-Gemini AI
- │
- ├── Question Generation
- ├── Answer Evaluation
- ├── Scoring
- ├── Feedback
- └── Improvement Suggestions
+       ┌────────────────────────┐
+       │   React SPA (Vite)     │
+       └───────────┬────────────┘
+                   │ HTTPS Requests (CORS, JWT)
+                   ▼
+       ┌────────────────────────┐
+       │  Express REST API      │
+       └───────────┬────────────┘
+                   │
+         ┌─────────┴─────────┐
+         ▼                   ▼
+┌─────────────────┐ ┌─────────────────┐
+│ MongoDB (Atlas) │ │    Gemini AI    │
+│  (Mongoose)     │ │ (Local Fallback)│
+└─────────────────┘ └─────────────────┘
 ```
 
 ---
 
-# 🔄 Project Workflow
+## 💻 Tech Stack
 
-```text
-User Login
-     │
-     ▼
-Select Interview Role
-     │
-     ▼
-Generate Questions
-     │
-     ▼
-Answer Questions
-(Text / Speech)
-     │
-     ▼
-Speech-To-Text
-     │
-     ▼
-Gemini AI Evaluation
-     │
-     ▼
-Detailed Feedback
-     │
-     ▼
-Score Generation
-     │
-     ▼
-Store Results
-     │
-     ▼
-Update Analytics
-     │
-     ▼
-Generate PDF Report
-     │
-     ▼
-Generate Certificate
+* **Frontend**: React 19, Vite, Vanilla CSS (Premium theme/animations), Framer Motion, Chart.js, Axios.
+* **Backend**: Node.js, Express.js, helmet, cors, express-rate-limit.
+* **Database**: MongoDB, Mongoose.
+* **Testing**: Jest, Supertest, React Testing Library.
+
+---
+
+## 🔑 Environment Variables
+
+### Backend (`server/.env`):
+```env
+PORT=5000
+NODE_ENV=development
+MONGO_URI=mongodb://localhost:27017/ai-interview
+JWT_SECRET=your_super_secret_jwt_key_at_least_32_chars
+GEMINI_API_KEY=your_gemini_api_key_here
+ALLOW_DEV_AUTH_SECRETS=true
+CLIENT_URL=http://localhost:5173
+```
+
+### Frontend (`client/.env`):
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
 ---
 
-# 💻 Technology Stack
+## ⚙️ Installation & Running
 
-## Frontend
-
-* React.js
-* Vite
-* Tailwind CSS
-* Framer Motion
-* Chart.js
-* Axios
-
-## Backend
-
-* Node.js
-* Express.js
-
-## Database
-
-* MongoDB
-* Mongoose
-
-## Authentication
-
-* JWT
-* bcrypt
-
-## AI
-
-* Gemini AI
-
-## Testing
-
-* Jest
-* React Testing Library
-* Supertest
-
----
-
-# 🗄️ Database Collections
-
-## Users
-
-* Profile Information
-* Authentication Data
-
-## Interviews
-
-* Questions
-* Answers
-* Scores
-* Feedback
-
-## ATSResults
-
-* ATS Score
-* Keywords
-* Missing Skills
-
-## Reports
-
-* Interview Reports
-
-## Certificates
-
-* Completion Certificates
-
----
-
-# ⚙️ Installation
-
-## Clone Repository
-
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/PavanRameshMalthi/AI-Mock-Interview.git
 cd AI-Mock-Interview
 ```
 
-## Backend Setup
+### 2. Run Database
+Ensure MongoDB is running locally on port `27017` or update the `MONGO_URI` in `server/.env`.
 
+### 3. Install & Start Backend Server
 ```bash
 cd server
 npm install
 npm run dev
 ```
 
-## Frontend Setup
-
+### 4. Install & Start Frontend Client
 ```bash
-cd client
+cd ../client
 npm install
 npm run dev
 ```
+Open `http://localhost:5173` in your browser.
 
 ---
 
-# 🔑 Environment Variables
+## 🧪 Testing
 
-Server:
+The codebase includes comprehensive backend and frontend test coverage.
 
-```env
-PORT=5000
-
-MONGO_URI=
-
-JWT_SECRET=
-
-GEMINI_API_KEY=
-
-GOOGLE_CLIENT_ID=
-
-GOOGLE_CLIENT_SECRET=
-
-LINKEDIN_CLIENT_ID=
-
-LINKEDIN_CLIENT_SECRET=
-```
-
-Client:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-Never commit real API keys.
-
----
-
-# 🧪 Testing
-
-Run Backend Tests:
-
+### Run Backend API & Engine Tests:
 ```bash
 cd server
 npm test
 ```
 
-Run Frontend Tests:
-
+### Run Frontend Component & Route Tests:
 ```bash
 cd client
 npm test
 ```
 
-Test Coverage:
-
-* Authentication
-* Interview Flow
-* ATS Analyzer
-* Dashboard
-* Analytics
-* Security
-* API Endpoints
-
 ---
 
-# 🔒 Security Features
-
-* JWT Authentication
-* Password Hashing
-* Protected Routes
-* Input Validation
-* Rate Limiting
-* Helmet Security
-* XSS Protection
-* NoSQL Injection Protection
-
----
-
-# 📸 Screenshots
-
-Add screenshots here:
-
-```text
-docs/screenshots/landing-page.png
-
-docs/screenshots/dashboard.png
-
-docs/screenshots/interview-page.png
-
-docs/screenshots/results-page.png
-
-docs/screenshots/history-page.png
-
-docs/screenshots/certificate-page.png
-```
-
----
-
-# 🚀 Future Enhancements
-
-* AI Career Guidance
-* Video Interviews
-* Voice Interviews
-* Resume Builder
-* Group Discussion Simulator
-* Company-Specific Interview Preparation
-
----
-
-# 👨‍💻 Author
-
-Name: Pavan Ramesh Malthi
-
-GitHub:
-https://github.com/PavanRameshMalthi
-
-LinkedIn:
-www.linkedin.com/in/pavan-ramesh-malthi
-
----
-
-# 📜 License
-
-MIT License
-
----
-
-⭐ If you found this project useful, consider giving it a star on GitHub.
+## 🔒 Security Features
+* **Rate Limiting**: Protects general API routes and locks login attempts (max 10 within 15 mins) to prevent brute-force attacks.
+* **XSS Scrubbing**: Sanitizes HTML payload injections.
+* **NoSQL Injection Guard**: Middleware recursively filters out MongoDB query operators (starting with `$` or `.`).
+* **HTTP-Only Cookies**: Stores session refresh tokens securely.
+* **Helmet Middleware**: Configures HTTP headers for web protection.

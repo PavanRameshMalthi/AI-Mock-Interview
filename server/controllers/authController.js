@@ -40,14 +40,6 @@ const createRefreshToken = () => crypto.randomBytes(48).toString("hex");
 const getClientUrl = () =>
   (process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173").split(",")[0];
 
-const getServerUrl = (req) =>
-  (process.env.SERVER_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
-
-const getOAuthRedirectUri = (provider, req) => {
-  const envKey = provider === "google" ? "GOOGLE_REDIRECT_URI" : "LINKEDIN_REDIRECT_URI";
-  return process.env[envKey] || `${getServerUrl(req)}/api/auth/${provider}/callback`;
-};
-
 const appendQuery = (url, params) => {
   const target = new URL(url);
   Object.entries(params).forEach(([key, value]) => {
@@ -63,17 +55,6 @@ const deliverMessage = async ({ to, subject, text }) => {
   }
 
   return true;
-};
-
-const redirectWithSession = async (user, res) => {
-  const session = await issueSession(user, res);
-  res.redirect(
-    appendQuery(`${getClientUrl().replace(/\/$/, "")}/login`, {
-      token: session.token,
-      user: Buffer.from(JSON.stringify(session.user)).toString("base64url"),
-      auth: "success",
-    })
-  );
 };
 
 const findUserByEmailWithSecrets = async (email) => {
@@ -110,49 +91,7 @@ const issueSession = async (user, res, options = {}) => {
   return { token, user: sanitizeUser(user) };
 };
 
-const upsertProviderUser = async ({
-  provider,
-  providerId,
-  email,
-  name,
-  profilePicture,
-  extra = {},
-}) => {
-  const normalizedEmail = String(email || "").trim().toLowerCase();
-  const providerField = provider === "google" ? "googleId" : "linkedinId";
-  const providerValue = String(providerId || normalizedEmail).trim();
 
-  if (!providerValue) {
-    throw new AppError(`${provider} login requires a verified profile identifier`, 400);
-  }
-
-  let user = await User.findOne({ [providerField]: providerValue });
-
-  if (!user && normalizedEmail) {
-    user = await User.findOne({ email: normalizedEmail });
-  }
-
-  if (user) {
-    user.name = user.name || name || "Candidate";
-    user.profilePicture = user.profilePicture || profilePicture || undefined;
-    user.authProvider = user.authProvider === "local" ? "local" : provider;
-    user[providerField] = user[providerField] || providerValue;
-    if (provider === "google") user.isEmailVerified = true;
-    Object.assign(user, extra);
-    await user.save?.();
-    return user;
-  }
-
-  return User.create({
-    name: name || "Candidate",
-    email: normalizedEmail,
-    profilePicture,
-    authProvider: provider,
-    [providerField]: providerValue,
-    isEmailVerified: true,
-    ...extra,
-  });
-};
 
 const registerUser = asyncHandler(async (req, res) => {
   const name = String(req.body.name || "").trim();
@@ -290,136 +229,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   });
 });
 
-const exchangeOAuthCode = async ({ provider, code, redirectUri }) => {
-  const config =
-    provider === "google"
-      ? {
-          tokenUrl: "https://oauth2.googleapis.com/token",
-          profileUrl: "https://www.googleapis.com/oauth2/v3/userinfo",
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        }
-      : {
-          tokenUrl: "https://www.linkedin.com/oauth/v2/accessToken",
-          profileUrl: "https://api.linkedin.com/v2/userinfo",
-          clientId: process.env.LINKEDIN_CLIENT_ID,
-          clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-        };
 
-  if (!config.clientId || !config.clientSecret) {
-    throw new AppError(`${provider} OAuth is not configured`, 500);
-  }
-
-  const tokenResponse = await fetch(config.tokenUrl, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: redirectUri,
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-    }),
-  });
-
-  if (!tokenResponse.ok) {
-    throw new AppError(`${provider} OAuth token exchange failed`, 401);
-  }
-
-  const tokenPayload = await tokenResponse.json();
-  const profileResponse = await fetch(config.profileUrl, {
-    headers: { Authorization: `Bearer ${tokenPayload.access_token}` },
-  });
-
-  if (!profileResponse.ok) {
-    throw new AppError(`${provider} profile lookup failed`, 401);
-  }
-
-  return profileResponse.json();
-};
-
-const startOAuth = (provider, req, res) => {
-  const isGoogle = provider === "google";
-  const clientId = isGoogle ? process.env.GOOGLE_CLIENT_ID : process.env.LINKEDIN_CLIENT_ID;
-
-  if (!clientId) {
-    throw new AppError(`${provider} OAuth client ID is not configured`, 500);
-  }
-
-  const redirectUri = getOAuthRedirectUri(provider, req);
-  const state = createRefreshToken();
-  res.cookie(`${provider}OAuthState`, state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 10 * 60 * 1000,
-  });
-
-  const authUrl = new URL(
-    isGoogle
-      ? "https://accounts.google.com/o/oauth2/v2/auth"
-      : "https://www.linkedin.com/oauth/v2/authorization"
-  );
-  authUrl.searchParams.set("client_id", clientId);
-  authUrl.searchParams.set("redirect_uri", redirectUri);
-  authUrl.searchParams.set("response_type", "code");
-  authUrl.searchParams.set("state", state);
-  authUrl.searchParams.set("scope", isGoogle ? "openid email profile" : "openid profile email");
-  authUrl.searchParams.set("prompt", "select_account");
-
-  res.redirect(authUrl.toString());
-};
-
-const googleStart = asyncHandler((req, res) => startOAuth("google", req, res));
-
-const linkedinStart = asyncHandler((req, res) => startOAuth("linkedin", req, res));
-
-const googleCallback = asyncHandler(async (req, res) => {
-  if (!req.query.code || req.query.state !== req.cookies?.googleOAuthState) {
-    throw new AppError("Google OAuth state is invalid", 401);
-  }
-
-  const redirectUri = getOAuthRedirectUri("google", req);
-  const profile = await exchangeOAuthCode({
-    provider: "google",
-    code: req.query.code,
-    redirectUri,
-  });
-  const user = await upsertProviderUser({
-    provider: "google",
-    providerId: profile.sub,
-    email: profile.email,
-    name: profile.name,
-    profilePicture: profile.picture,
-  });
-
-  res.clearCookie("googleOAuthState");
-  await redirectWithSession(user, res);
-});
-
-const linkedinCallback = asyncHandler(async (req, res) => {
-  if (!req.query.code || req.query.state !== req.cookies?.linkedinOAuthState) {
-    throw new AppError("LinkedIn OAuth state is invalid", 401);
-  }
-
-  const redirectUri = getOAuthRedirectUri("linkedin", req);
-  const profile = await exchangeOAuthCode({
-    provider: "linkedin",
-    code: req.query.code,
-    redirectUri,
-  });
-  const user = await upsertProviderUser({
-    provider: "linkedin",
-    providerId: profile.sub,
-    email: profile.email,
-    name: profile.name,
-    profilePicture: profile.picture,
-    extra: { linkedinHeadline: profile.localizedHeadline },
-  });
-
-  res.clearCookie("linkedinOAuthState");
-  await redirectWithSession(user, res);
-});
 
 const resetPassword = asyncHandler(async (req, res) => {
   const tokenHash = hashToken(String(req.body.token || ""));
@@ -489,31 +299,6 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
   res.json(payload);
 });
 
-const googleAuth = asyncHandler(async (req, res) => {
-  const user = await upsertProviderUser({
-    provider: "google",
-    providerId: req.body.googleId || req.body.idToken,
-    email: req.body.email,
-    name: req.body.name,
-    profilePicture: req.body.profilePicture,
-  });
-
-  res.json({ success: true, ...(await issueSession(user, res)) });
-});
-
-const linkedinAuth = asyncHandler(async (req, res) => {
-  const user = await upsertProviderUser({
-    provider: "linkedin",
-    providerId: req.body.linkedinId || req.body.accessToken,
-    email: req.body.email,
-    name: req.body.name,
-    profilePicture: req.body.profilePicture,
-    extra: { linkedinHeadline: req.body.headline },
-  });
-
-  res.json({ success: true, ...(await issueSession(user, res)) });
-});
-
 module.exports = {
   registerUser,
   loginUser,
@@ -524,10 +309,4 @@ module.exports = {
   resetPassword,
   verifyEmail,
   resendEmailVerification,
-  googleAuth,
-  googleStart,
-  googleCallback,
-  linkedinAuth,
-  linkedinStart,
-  linkedinCallback,
 };

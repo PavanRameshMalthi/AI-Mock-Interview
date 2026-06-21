@@ -45,16 +45,6 @@ const verifyEmailRules = [
   body("token").isString().isLength({ min: 20 }).withMessage("Verification token is invalid"),
 ];
 
-const providerLoginRules = [
-  body("email")
-    .optional({ checkFalsy: true })
-    .trim()
-    .isEmail()
-    .withMessage("Enter a valid email address")
-    .normalizeEmail(),
-  body("name").optional({ checkFalsy: true }).trim().isLength({ min: 2, max: 80 }),
-];
-
 module.exports = {
   passwordRule,
   registerRules,
@@ -63,5 +53,4 @@ module.exports = {
   forgotPasswordRules,
   resetPasswordRules,
   verifyEmailRules,
-  providerLoginRules,
 };

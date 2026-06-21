@@ -99,26 +99,26 @@ const Landing = () => {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
         <Link
-          className="text-base font-black tracking-tight text-white sm:text-lg"
+          className="text-base font-black tracking-tight text-[var(--text)] sm:text-lg"
           to="/"
         >
           AI Mock Interview
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            className="rounded-md px-3 py-2 text-sm font-bold text-slate-300 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            className="rounded-md px-3 py-2 text-sm font-bold text-[var(--muted)] transition hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
             to="/login"
           >
-            Sign in
+            Login
           </Link>
           <Link
-            className="rounded-md bg-cyan-300 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className="btn btn-primary compact"
             to="/register"
           >
-            Create account
+            Signup
           </Link>
         </div>
       </nav>
@@ -129,62 +129,62 @@ const Landing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <p className="mb-4 text-sm font-black uppercase tracking-widest text-cyan-300">
+          <p className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--primary)]">
             Interview practice workspace
           </p>
-          <h1 className="max-w-4xl text-4xl font-black leading-tight tracking-normal text-white sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-4xl text-4xl font-black leading-tight tracking-normal text-[var(--text)] sm:text-5xl lg:text-6xl">
             Practice technical interviews with required answers and precise feedback.
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+          <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
             Build role-specific mock sessions, answer every question, submit for
             evaluation, and keep the full history of your progress in one place.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-cyan-300 px-5 text-sm font-black text-slate-950 transition hover:bg-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="btn btn-primary"
               to="/register"
             >
-              Create account <FaArrowRight aria-hidden="true" />
+              Signup <FaArrowRight aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-700 px-5 text-sm font-black text-slate-100 transition hover:border-slate-500 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+              className="btn btn-secondary"
               to="/login"
             >
-              Sign in
+              Login
             </Link>
           </div>
         </motion.div>
 
         <motion.div
-          className="rounded-lg border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-slate-950/40 sm:p-6"
+          className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl sm:p-6"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}
           aria-label="Interview workflow preview"
         >
-          <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="mb-5 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-cyan-300">
+              <p className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">
                 Session flow
               </p>
-              <h2 className="mt-1 text-xl font-black text-white">From setup to history</h2>
+              <h2 className="mt-1 text-xl font-black text-[var(--text)]">From setup to history</h2>
             </div>
-            <span className="rounded-md border border-slate-700 px-3 py-1 text-xs font-bold text-slate-300">
+            <span className="rounded-md border border-[var(--border)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
               Authenticated
             </span>
           </div>
           <ol className="space-y-3">
             {steps.map(([title, description], index) => (
               <li
-                className="grid grid-cols-[auto_1fr] gap-4 rounded-md border border-slate-800 bg-slate-950/60 p-4"
+                className="grid grid-cols-[auto_1fr] gap-4 rounded-md border border-[var(--border)] bg-[var(--bg)] p-4"
                 key={title}
               >
-                <span className="grid h-9 w-9 place-items-center rounded-md bg-cyan-300 text-sm font-black text-slate-950">
+                <span className="grid h-9 w-9 place-items-center rounded-md bg-[var(--primary)] text-sm font-black text-[var(--bg)]">
                   {index + 1}
                 </span>
                 <span>
-                  <strong className="block text-sm text-white">{title}</strong>
-                  <span className="mt-1 block text-sm leading-6 text-slate-400">
+                  <strong className="block text-sm text-[var(--text)]">{title}</strong>
+                  <span className="mt-1 block text-sm leading-6 text-[var(--muted)]">
                     {description}
                   </span>
                 </span>
@@ -195,27 +195,27 @@ const Landing = () => {
       </section>
 
       <motion.section
-        className="border-y border-slate-800 bg-slate-900/45 px-4 py-16 sm:px-6 lg:px-8"
+        className="border-y border-[var(--border)] bg-[var(--surface-soft)] px-4 py-16 sm:px-6 lg:px-8"
         {...sectionMotion}
       >
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
-            <p className="text-sm font-black uppercase tracking-widest text-cyan-300">
+            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
               Features
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
               A complete preparation loop without fake urgency.
             </h2>
           </div>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
               <article
-                className="rounded-lg border border-slate-800 bg-slate-950/55 p-5"
+                className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-5"
                 key={feature.title}
               >
-                <feature.Icon className="mb-5 text-2xl text-cyan-300" aria-hidden="true" />
-                <h3 className="text-lg font-black text-white">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-400">
+                <feature.Icon className="mb-5 text-2xl text-[var(--primary)]" aria-hidden="true" />
+                <h3 className="text-lg font-black text-[var(--text)]">{feature.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
                   {feature.description}
                 </p>
               </article>
@@ -227,13 +227,13 @@ const Landing = () => {
       <motion.section className="px-4 py-16 sm:px-6 lg:px-8" {...sectionMotion}>
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-cyan-300">
+            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
               How it works
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
               Built around the real interview flow.
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-400">
+            <p className="mt-4 text-base leading-8 text-[var(--muted)]">
               The product path is direct: configure, answer, evaluate, and
               review. Each step supports the next one without hiding the work.
             </p>
@@ -241,14 +241,14 @@ const Landing = () => {
           <div className="grid gap-4 sm:grid-cols-2">
             {steps.map(([title, description], index) => (
               <div
-                className="rounded-lg border border-slate-800 bg-slate-900/55 p-5"
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5"
                 key={title}
               >
-                <span className="text-sm font-black text-cyan-300">
+                <span className="text-sm font-black text-[var(--primary)]">
                   Step {index + 1}
                 </span>
-                <h3 className="mt-3 text-lg font-black text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-7 text-slate-400">{description}</p>
+                <h3 className="mt-3 text-lg font-black text-[var(--text)]">{title}</h3>
+                <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{description}</p>
               </div>
             ))}
           </div>
@@ -256,26 +256,26 @@ const Landing = () => {
       </motion.section>
 
       <motion.section
-        className="border-y border-slate-800 bg-slate-900/45 px-4 py-16 sm:px-6 lg:px-8"
+        className="border-y border-[var(--border)] bg-[var(--surface-soft)] px-4 py-16 sm:px-6 lg:px-8"
         {...sectionMotion}
       >
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-cyan-300">
+            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
               Benefits
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
               Make practice specific enough to change behavior.
             </h2>
           </div>
           <div className="space-y-4">
             {benefits.map((benefit) => (
               <div
-                className="flex gap-4 rounded-lg border border-slate-800 bg-slate-950/55 p-5"
+                className="flex gap-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-5"
                 key={benefit}
               >
-                <FaCheckCircle className="mt-1 shrink-0 text-cyan-300" aria-hidden="true" />
-                <p className="m-0 text-base leading-7 text-slate-300">{benefit}</p>
+                <FaCheckCircle className="mt-1 shrink-0 text-[var(--primary)]" aria-hidden="true" />
+                <p className="m-0 text-base leading-7 text-[var(--muted)]">{benefit}</p>
               </div>
             ))}
           </div>
@@ -285,10 +285,10 @@ const Landing = () => {
       <motion.section className="px-4 py-16 sm:px-6 lg:px-8" {...sectionMotion}>
         <div className="mx-auto max-w-4xl">
           <div className="text-center">
-            <p className="text-sm font-black uppercase tracking-widest text-cyan-300">
+            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
               FAQ
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
               Practical answers before you begin.
             </h2>
           </div>
@@ -297,18 +297,18 @@ const Landing = () => {
               const isOpen = openFaq === index;
               return (
                 <article
-                  className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/55"
+                  className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]"
                   key={faq.question}
                 >
                   <button
                     aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-black text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-black text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
                     onClick={() => setOpenFaq(isOpen ? null : index)}
                     type="button"
                   >
                     {faq.question}
                     <FaChevronDown
-                      className={`shrink-0 text-cyan-300 transition ${isOpen ? "rotate-180" : ""}`}
+                      className={`shrink-0 text-[var(--primary)] transition ${isOpen ? "rotate-180" : ""}`}
                       aria-hidden="true"
                     />
                   </button>
@@ -320,7 +320,7 @@ const Landing = () => {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <p className="m-0 border-t border-slate-800 px-5 py-4 text-sm leading-7 text-slate-400">
+                        <p className="m-0 border-t border-[var(--border)] px-5 py-4 text-sm leading-7 text-[var(--muted)]">
                           {faq.answer}
                         </p>
                       </motion.div>
@@ -337,24 +337,25 @@ const Landing = () => {
         className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6 lg:px-8"
         {...sectionMotion}
       >
-        <div className="rounded-lg border border-cyan-300/30 bg-cyan-300 p-6 text-slate-950 sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
+        <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)] p-6 text-[var(--bg)] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <p className="text-sm font-black uppercase tracking-widest text-[var(--bg)]/70">
               Next step
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-normal sm:text-4xl">
               Prepare with a flow that requires complete answers.
             </h2>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-slate-800">
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--bg)]/80">
               Create an account, run a mock session, submit it, and review the
               saved result when you are ready to improve the next round.
             </p>
           </div>
           <Link
-            className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 focus-visible:ring-offset-cyan-300 lg:mt-0"
+            className="mt-6 btn btn-secondary lg:mt-0"
+            style={{ background: "var(--bg)", color: "var(--text)" }}
             to="/register"
           >
-            Create account <FaArrowRight aria-hidden="true" />
+            Signup <FaArrowRight aria-hidden="true" />
           </Link>
         </div>
       </motion.section>

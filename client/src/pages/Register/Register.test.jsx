@@ -30,7 +30,7 @@ test("disables registration until password rules pass", async () => {
   await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
   await userEvent.type(screen.getByLabelText(/^password$/i), "short");
 
-  expect(screen.getByRole("button", { name: /create account/i })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /signup/i })).toBeDisabled();
   expect(screen.getByText(/uppercase letter/i)).toBeInTheDocument();
   expect(authService.register).not.toHaveBeenCalled();
 });
@@ -52,7 +52,7 @@ test("submits valid registration and stores returned session", async () => {
   await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
   await userEvent.type(screen.getByLabelText(/^password$/i), "Password123!");
   await userEvent.type(screen.getByLabelText(/^confirm password$/i), "Password123!");
-  await userEvent.click(screen.getByRole("button", { name: /create account/i }));
+  await userEvent.click(screen.getByRole("button", { name: /signup/i }));
 
   expect(authService.register).toHaveBeenCalledWith({
     name: "Test User",
