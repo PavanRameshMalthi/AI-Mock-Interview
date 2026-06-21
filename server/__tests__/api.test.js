@@ -473,10 +473,32 @@ describe("protected interview APIs", () => {
     );
   });
 
-  test.each([
-    ["empty", ""],
-    ["random", "asdf qwerty lorem ipsum as an AI"],
-  ])("returns low detailed scores for a %s answer", async (_label, answer) => {
+  test("rejects an empty answer before evaluation", async () => {
+    model.generateContent.mockRejectedValue(new Error("provider down"));
+
+    const response = await request(app)
+      .post("/api/evaluation/evaluate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        questions: ["Explain React state management."],
+        answers: [""],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Validation failed");
+    expect(response.body.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "answers",
+          message: expect.stringMatching(/every question must have an answer/i),
+        }),
+      ])
+    );
+    expect(Interview.create).not.toHaveBeenCalled();
+  });
+
+  test("returns low detailed scores for a random answer", async () => {
     model.generateContent.mockRejectedValue(new Error("provider down"));
     Interview.create.mockResolvedValue({});
 
@@ -486,7 +508,7 @@ describe("protected interview APIs", () => {
       .send({
         role: "Frontend Developer",
         questions: ["Explain React state management."],
-        answers: [answer],
+        answers: ["asdf qwerty lorem ipsum as an AI"],
       });
 
     expect(response.status).toBe(200);

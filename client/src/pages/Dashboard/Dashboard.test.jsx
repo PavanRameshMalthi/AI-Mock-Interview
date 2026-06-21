@@ -23,10 +23,16 @@ test("renders dashboard summary and actions", async () => {
     recent: [{ _id: "1", role: "Frontend Developer", score: 84 }],
   });
   dashboardService.getAnalytics.mockResolvedValue({
-    summary: { improvementPercentage: 10 },
-    trends: { interviewScores: [], atsScores: [] },
-    strongSkillAreas: [],
-    weakSkillAreas: [],
+    summary: { bestScore: 94, improvementPercentage: 10, interviewStreak: 3 },
+    trends: {
+      interviewScores: [{ role: "Frontend Developer", score: 84 }],
+      atsScores: [],
+      weeklyProgress: [{ week: "2026-06-15", averageScore: 82 }],
+      monthlyProgress: [{ month: "2026-06", averageScore: 82 }],
+    },
+    skillGrowth: [{ skill: "React", score: 88 }],
+    strongSkillAreas: [{ name: "React" }],
+    weakSkillAreas: [{ name: "Accessibility" }],
   });
 
   render(
@@ -39,6 +45,20 @@ test("renders dashboard summary and actions", async () => {
     expect(screen.getByText("82%")).toBeInTheDocument();
   });
 
+  expect(screen.getByText("Total Interviews")).toBeInTheDocument();
+  expect(screen.getByText("Average Score")).toBeInTheDocument();
+  expect(screen.getByText("Best Score")).toBeInTheDocument();
+  expect(screen.getByText("Interview Streak")).toBeInTheDocument();
+  expect(screen.getByText("94%")).toBeInTheDocument();
+  expect(screen.getByText("3d")).toBeInTheDocument();
+  expect(screen.getByText("Strong Areas")).toBeInTheDocument();
+  expect(screen.getByText("Weak Areas")).toBeInTheDocument();
+  expect(screen.getByText("React")).toBeInTheDocument();
+  expect(screen.getByText("Accessibility")).toBeInTheDocument();
+  expect(screen.getByText("Score Trend")).toBeInTheDocument();
+  expect(screen.getByText("Weekly Progress")).toBeInTheDocument();
+  expect(screen.getByText("Monthly Progress")).toBeInTheDocument();
+  expect(screen.getByText("Skill Growth")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /start interview/i })).toHaveAttribute(
     "href",
     "/interview-setup"

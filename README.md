@@ -18,7 +18,8 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 - Certificate generator for completed interviews
 - Searchable interview history with soft delete, bulk delete, restore, and undo
 - Admin dashboard for platform metrics, user management, and report export
-- Chart.js analytics dashboard with score trends, monthly progress, and skill growth
+- Framer Motion dashboard with total interviews, average score, best score, weak areas, strong areas, interview streak, and Chart.js analytics
+- Dashboard charts for score trend, weekly progress, monthly progress, and skill growth
 - Deep interview history view with questions, answers, feedback, strengths, weaknesses, and learning recommendations
 - Recycle-bin history management with search, filter, sort, bulk delete, restore, undo, confirmation modal, and toast notifications
 - Results redesign with score meter, score bars, badges, question-level feedback, PDF report export, and certificate export
@@ -34,6 +35,7 @@ AI Mock Interview Platform is a full-stack MERN-style SaaS MVP for resume-aware 
 - React Router
 - Axios
 - Chart.js
+- Framer Motion
 - React Hot Toast
 - React Icons
 - jsPDF
@@ -202,8 +204,10 @@ npm test
 
 Current verified test run:
 
-- Backend: 38 passed, 38 total
-- Frontend: 31 passed, 31 total
+- Backend: 80 passed, 80 total
+- Frontend: 32 passed, 32 total
+- Frontend lint: passing
+- Frontend production build: passing, with a bundle-size warning for large client chunks
 
 Run lint:
 

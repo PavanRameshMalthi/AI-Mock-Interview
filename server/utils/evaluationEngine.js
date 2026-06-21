@@ -114,8 +114,12 @@ const calculateCorrectness = (normalizedAnswer, keywords, matchedKeywords) => {
 };
 
 const calculateRelevance = (answer, questionTokens, answerTokens, normalizedAnswer) => {
-  if (questionTokens.length === 0 || answerTokens.length === 0) return 0;
-  const relevanceHits = questionTokens.filter((token) => answerTokens.has(token)).length;
+  if (questionTokens.length === 0 || answerTokens.size === 0) return 0;
+  const matchesAnswerToken = (token) =>
+    answerTokens.has(token) ||
+    (token.endsWith("s") && answerTokens.has(token.slice(0, -1))) ||
+    answerTokens.has(`${token}s`);
+  const relevanceHits = questionTokens.filter(matchesAnswerToken).length;
   const relevanceScore = (relevanceHits / Math.max(questionTokens.length, 1)) * 100;
   const topicAligned = /\b(explain|describe|discuss|detail|implement|design|build|architecture|approach)\b/i.test(answer) ? 10 : 0;
   return Math.min(relevanceScore + topicAligned, 100);
@@ -174,6 +178,7 @@ const scoreQuestion = ({ questionInput, answer, role, difficulty }) => {
 
   // Apply strict quality penalties and scoring bands
   const numMatched = matchedKeywords.length;
+  const strongKeywordCoverage = numMatched >= Math.ceil(keywords.length * 0.75);
   
   if (qualityFlag === "empty") {
     rawScore = 0;
@@ -186,7 +191,7 @@ const scoreQuestion = ({ questionInput, answer, role, difficulty }) => {
   } else if (numMatched <= 1 || (correctnessScore < 25 && relevanceScore < 25)) {
     // Wrong Answer -> Low Score (0-35)
     rawScore = Math.min(rawScore, 35);
-  } else if (numMatched >= 4 && correctnessScore >= 65 && relevanceScore >= 40) {
+  } else if (strongKeywordCoverage && correctnessScore >= 65 && relevanceScore >= 15) {
     // Correct Answer -> High Score (71-100)
     rawScore = Math.max(rawScore, 75);
   } else {
